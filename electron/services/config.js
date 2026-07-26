@@ -67,7 +67,8 @@ function loadConfig(bypassCache) {
   try {
     const parsed = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
     configCache = parsed; configCacheTime = now; return parsed;
-  } catch {
+  } catch (err) {
+    console.error('Failed to load config:', err.message);
     configCache = { ...DEFAULT_CONFIG }; configCacheTime = now; return configCache;
   }
 }

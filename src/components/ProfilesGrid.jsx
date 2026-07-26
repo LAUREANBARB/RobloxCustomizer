@@ -12,7 +12,7 @@ export default function ProfilesGrid() {
   const [loading, setLoading] = useState(null);
 
   const loadProfiles = async () => {
-    try { const p = await window.api.getProfiles(); setProfiles(p); } catch {}
+    try { const p = await window.api.getProfiles(); setProfiles(p); } catch { addNotification('Failed to load profiles', 'error'); }
   };
 
   useEffect(() => { loadProfiles(); }, []);

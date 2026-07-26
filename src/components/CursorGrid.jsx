@@ -93,7 +93,7 @@ export default function CursorGrid() {
     try {
       const presets = await window.api.getCursorPresets();
       setCursorPresets(presets);
-    } catch {}
+    } catch { addNotification('Failed to load presets', 'error'); }
   }, []);
 
   useEffect(() => { loadPresets(); }, []);

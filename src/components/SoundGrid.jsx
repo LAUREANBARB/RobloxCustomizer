@@ -136,8 +136,8 @@ export default function SoundGrid() {
     preset.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const loadPresets = async () => {
-    try { const presets = await window.api.getSoundPresets(); setSoundPresets(presets); } catch {}
+  const loadAll = async () => {
+    try { const s = await window.api.getSoundPresets(); setSoundPresets(s); } catch { addNotification('Failed to load presets', 'error'); }
   };
 
   useEffect(() => { loadPresets(); }, []);

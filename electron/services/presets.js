@@ -219,7 +219,8 @@ function listProfiles() {
     .map((f) => {
       try {
         return JSON.parse(fs.readFileSync(path.join(PROFILES_DIR, f), 'utf-8'));
-      } catch { return null; }
+      } catch (err) {
+        console.error('Failed to parse profile:', err.message); return null; }
     })
     .filter(Boolean);
 }

@@ -113,7 +113,8 @@ function isRobloxRunning() {
     }
     robloxRunningCacheTime = now;
     return robloxRunningCache;
-  } catch {
+  } catch (err) {
+    console.error('Failed to check Roblox process status:', err.message);
     robloxRunningCache = false;
     robloxRunningCacheTime = now;
     return false;

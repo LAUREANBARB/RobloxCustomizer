@@ -64,7 +64,7 @@ export default function App() {
           setCategorizedCursors(categorized.cursors);
           setCategorizedSounds(categorized.sounds);
           setRobloxRunning(running);
-        } catch {}
+        } catch { addNotification('Failed to load presets', 'error'); }
       }, 200);
     } catch (e) {
       addNotification('Failed to load data', 'error');

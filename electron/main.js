@@ -83,7 +83,8 @@ ipcMain.handle('get-settings', () => {
   try {
     const autoStart = app.getLoginItemSettings().openAtLogin;
     return { ...config, autoStart };
-  } catch {
+  } catch (err) {
+    console.error('Failed to read auto-start status:', err.message);
     return { ...config, autoStart: false };
   }
 });
@@ -207,11 +208,11 @@ ipcMain.handle('set-theme', (_e, theme) => {
 // -- IPC: Auto-start ---------------------------------------------------------
 
 ipcMain.handle('get-autostart', () => {
-  try { return app.getLoginItemSettings().openAtLogin; } catch { return false; }
+  try { return app.getLoginItemSettings().openAtLogin; } catch (err) { console.error('Failed to get autostart:', err.message); return false; }
 });
 
 ipcMain.handle('set-autostart', (_e, enabled) => {
-  try { app.setLoginItemSettings({ openAtLogin: enabled }); } catch {}
+  try { app.setLoginItemSettings({ openAtLogin: enabled }); } catch (err) { console.error('Failed to set autostart:', err.message); }
   return { success: true };
 });
 

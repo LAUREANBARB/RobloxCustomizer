@@ -19,7 +19,7 @@ export default function WatcherPrompt() {
       const cfg = await window.api.getConfig();
       setConfig(cfg);
       addNotification('Auto-apply enabled', 'success');
-    } catch {}
+    } catch { addNotification('Failed to toggle watcher', 'error'); }
     localStorage.setItem('watcher-prompt-dismissed', 'true');
     setVisible(false);
   };

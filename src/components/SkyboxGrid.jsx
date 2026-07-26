@@ -11,7 +11,7 @@ export default function SkyboxGrid() {
   );
 
   const loadPresets = useCallback(async () => {
-    try { const p = await window.api.getSkyboxPresets(); setSkyboxPresets(p); } catch {}
+    try { const p = await window.api.getSkyboxPresets(); setSkyboxPresets(p); } catch { addNotification('Failed to load presets', 'error'); }
   }, []);
 
   useEffect(() => { loadPresets(); }, []);

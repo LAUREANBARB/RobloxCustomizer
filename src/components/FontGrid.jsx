@@ -11,7 +11,7 @@ export default function FontGrid() {
   );
 
   const loadPresets = useCallback(async () => {
-    try { const p = await window.api.getFontPresets(); setFontPresets(p); } catch {}
+    try { const p = await window.api.getFontPresets(); setFontPresets(p); } catch { addNotification('Failed to load presets', 'error'); }
   }, []);
 
   useEffect(() => { loadPresets(); }, []);
