@@ -93,7 +93,7 @@ export default function MaterialGrid() {
             className="mb-4 w-full px-3 py-2 rounded border border-surface-700 bg-surface-900 text-surface-200 focus:outline-none focus:ring-2 focus:ring-accent"
           />
           {filteredPresets.length === 0 ? (
-            <p className="text-sm text-surface-500 text-center py-8">No materials found matching "{search}"</p>
+            <p className="text-sm text-surface-500 text-center py-8">No materials found matching &quot;{search}&quot;</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredPresets.map((preset, i) => (

@@ -15,6 +15,7 @@ export default function ProfilesGrid() {
     try { const p = await window.api.getProfiles(); setProfiles(p); } catch { addNotification('Failed to load profiles', 'error'); }
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadProfiles(); }, []);
 
   const handleCreate = async () => {
@@ -119,7 +120,7 @@ export default function ProfilesGrid() {
           </div>
           <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No profiles yet</h3>
           <p className="text-sm max-w-md" style={{ color: 'var(--text-muted)' }}>
-            Apply some presets, then click "Save Current" to create a profile.
+            Apply some presets, then click &quot;Save Current&quot; to create a profile.
           </p>
         </div>
       ) : (
