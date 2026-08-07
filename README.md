@@ -14,23 +14,17 @@ keep your cursors, sounds, textures, fonts in one place and easily apply them to
 
 Electron, React, Vite, Tailwind CSS, zustand
 
+output in `release/`.
 
+# For building from source
 
-# how to run?:
+How to run?:
 
-- npm install
-- npm start        # build + launch
+- npm start        # build + launch (if you get errors run *npm install*)
 - npm run dev      # dev mode with hot reload
 
-# how to build?:
+How to build without running?:
 
 - npm run dist         # Windows
 - npm run dist:linux   # Linux
 - npm run dist:all     # Windows + Linux
-
-output in `release/`.
-
-# for none tech geeks, 
-1. Open your terminal either by administrator/root or not.
-2. Then change the directory into where this project is.
-3. Type npm run for your platform. In the main folder a release folder will be created and you can run the app from there easily
