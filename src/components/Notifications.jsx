@@ -45,7 +45,8 @@ export default function Notifications() {
       {notifications.map((n) => (
         <div
           key={n.id}
-          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border backdrop-blur-xl text-sm font-medium ${n.exiting ? 'notif-exit' : 'notif-enter'} ${typeStyles[n.type] || typeStyles.info}`}
+          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border backdrop-blur-xl text-sm font-medium ${n.exiting ? 'notif-exit' : 'notif-enter'} ${typeStyles[n.type] || typeStyles.info} ${n.url ? 'cursor-pointer hover:brightness-125' : ''}`}
+          onClick={() => n.url && window.api.openExternal(n.url)}
         >
           {icons[n.type] || icons.info}
           {n.msg}

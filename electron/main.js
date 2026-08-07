@@ -11,6 +11,7 @@ const { getAllPresets, setActivePreset, removeActivePreset, deletePreset, getPre
 const { startWatcher, restartWatcherIfConfigChanged } = require('./services/watcher');
 const { createTray, rebuildMenu } = require('./services/tray');
 const { exportPack, importPack, backupConfig, restoreConfig } = require('./services/packs');
+const { checkForUpdates } = require('./services/updater');
 
 let mainWindow = null;
 let isQuitting = false;
@@ -183,6 +184,14 @@ ipcMain.handle('window-maximize', () => {
 });
 ipcMain.handle('window-close', () => { mainWindow?.close(); });
 
+ipcMain.handle('check-for-updates', () => {
+  return new Promise((resolve) => {
+    checkForUpdates(app.getVersion(), resolve);
+  });
+});
+
+ipcMain.handle('open-external', (_e, url) => { shell.openExternal(url); });
+
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
   app.quit();
@@ -207,6 +216,12 @@ app.whenReady().then(async () => {
   if (config.watcherEnabled) {
     startWatcher(config.watcherInterval);
   }
+
+  setTimeout(() => {
+    checkForUpdates(app.getVersion(), (result) => {
+      if (result.updateAvailable) send('update-available', result);
+    });
+  }, 5000);
 
   app.on('activate', () => { if (mainWindow) mainWindow.show(); });
 });

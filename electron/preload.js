@@ -67,6 +67,8 @@ contextBridge.exposeInMainWorld('api', {
   setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
   getAutostart: () => ipcRenderer.invoke('get-autostart'),
   setAutostart: (enabled) => ipcRenderer.invoke('set-autostart', enabled),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
 
   onModsReapplied: (cb) => {
     const handler = (_e, data) => cb(data);
@@ -77,5 +79,10 @@ contextBridge.exposeInMainWorld('api', {
     const handler = (_e, theme) => cb(theme);
     ipcRenderer.on('theme-changed', handler);
     return () => ipcRenderer.removeListener('theme-changed', handler);
+  },
+  onUpdateAvailable: (cb) => {
+    const handler = (_e, data) => cb(data);
+    ipcRenderer.on('update-available', handler);
+    return () => ipcRenderer.removeListener('update-available', handler);
   },
 });

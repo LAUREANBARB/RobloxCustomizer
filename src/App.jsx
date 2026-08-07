@@ -73,9 +73,15 @@ export default function App() {
         applyTheme(theme || '');
       }
     };
+    const onUpdateAvailable = (_e, data) => {
+      if (mounted) {
+        addNotification(`Update available: v${data.latest}`, 'info', data.url);
+      }
+    };
 
     const cleanupReapplied = window.api.onModsReapplied(onReapplied);
     const cleanupTheme = window.api.onThemeChanged(onTheme);
+    const cleanupUpdates = window.api.onUpdateAvailable(onUpdateAvailable);
 
     loadInterval.current = setInterval(async () => {
       if (!mounted) return;
@@ -88,6 +94,7 @@ export default function App() {
       clearInterval(loadInterval.current);
       cleanupReapplied?.();
       cleanupTheme?.();
+      cleanupUpdates?.();
     };
   }, [loadData, addNotification, setRobloxRunning, setTheme]);
 

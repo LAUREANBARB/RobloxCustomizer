@@ -49,10 +49,10 @@ const useStore = create((set) => ({
   setPlayingSound: (s) => set({ playingSound: s }),
 
   notifications: [],
-  addNotification: (msg, type = 'info') => {
+  addNotification: (msg, type = 'info', url = null) => {
     const id = Date.now();
     set((s) => ({
-      notifications: [...s.notifications, { id, msg, type, exiting: false }],
+      notifications: [...s.notifications, { id, msg, type, url, exiting: false }],
     }));
     setTimeout(() => {
       set((s) => ({
