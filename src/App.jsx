@@ -4,6 +4,7 @@ import { applyTheme } from './themes';
 import TitleBar from './components/TitleBar';
 import Sidebar from './components/Sidebar';
 import CursorGrid from './components/CursorGrid';
+import ShiftlockGrid from './components/ShiftlockGrid';
 import SoundGrid from './components/SoundGrid';
 import FontGrid from './components/FontGrid';
 import SkyboxGrid from './components/SkyboxGrid';
@@ -19,6 +20,7 @@ export default function App() {
   const {
     activeTab,
     setCursorPresets,
+    setShiftlockPresets,
     setSoundPresets,
     setFontPresets,
     setSkyboxPresets,
@@ -34,8 +36,9 @@ export default function App() {
 
   const loadData = useCallback(async () => {
     try {
-      const [cursorPresets, soundPresets, fontPresets, skyboxPresets, materialPresets, config, version] = await Promise.all([
+      const [cursorPresets, shiftlockPresets, soundPresets, fontPresets, skyboxPresets, materialPresets, config, version] = await Promise.all([
         window.api.getCursorPresets(),
+        window.api.getShiftlockPresets(),
         window.api.getSoundPresets(),
         window.api.getFontPresets(),
         window.api.getSkyboxPresets(),
@@ -44,6 +47,7 @@ export default function App() {
         window.api.getRobloxVersion(),
       ]);
       setCursorPresets(cursorPresets);
+      setShiftlockPresets(shiftlockPresets);
       setSoundPresets(soundPresets);
       setFontPresets(fontPresets);
       setSkyboxPresets(skyboxPresets);
@@ -58,7 +62,7 @@ export default function App() {
     } catch {
       addNotification('Failed to load data', 'error');
     }
-  }, [addNotification, setConfig, setCursorPresets, setFontPresets, setMaterialPresets, setRobloxRunning, setRobloxVersion, setSkyboxPresets, setSoundPresets, setTheme]);
+  }, [addNotification, setConfig, setCursorPresets, setShiftlockPresets, setFontPresets, setMaterialPresets, setRobloxRunning, setRobloxVersion, setSkyboxPresets, setSoundPresets, setTheme]);
 
   useEffect(() => {
     loadData();
@@ -116,6 +120,7 @@ export default function App() {
           <div className="flex-1 overflow-y-auto p-6">
             <div key={activeTab} className="tab-enter">
               {activeTab === 'cursors' && <CursorGrid />}
+              {activeTab === 'shiftlock' && <ShiftlockGrid />}
               {activeTab === 'sounds' && <SoundGrid />}
               {activeTab === 'fonts' && <FontGrid />}
               {activeTab === 'skyboxes' && <SkyboxGrid />}

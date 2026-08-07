@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { DIRS, CURSOR_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH, loadConfig, saveConfig, IS_LINUX, cap } = require('./config');
+const { DIRS, CURSOR_SUBPATH, SHIFTLOCK_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH, loadConfig, saveConfig, IS_LINUX, cap } = require('./config');
 const { getRobloxBase, getRobloxOverlayDir, getLatestRobloxVersion } = require('./roblox');
 
 const PRESET_TYPES = {
@@ -8,6 +8,11 @@ const PRESET_TYPES = {
     extensions: ['.png'],
     overlaySubpath: path.join('content', 'textures', 'Cursors', 'KeyboardMouse'),
     robloxSubpath: CURSOR_SUBPATH,
+  },
+  shiftlock: {
+    extensions: ['.png'],
+    overlaySubpath: path.join('content', 'textures'),
+    robloxSubpath: SHIFTLOCK_SUBPATH,
   },
   sounds: {
     extensions: ['.ogg', '.mp3', '.wav'],
@@ -72,6 +77,12 @@ function applyPreset(type, presetName, versionDir, presetDir) {
   const destDir = getOverlayOrRobloxDir(type, versionDir);
   if (!destDir) return false;
   const files = fs.readdirSync(src).filter((f) => cfg.extensions.some((ext) => f.toLowerCase().endsWith(ext)));
+
+  if (type === 'shiftlock' && files.length > 0) {
+    fs.copyFileSync(path.join(src, files[0]), path.join(destDir, 'MouseLockedCursor.png'));
+    return true;
+  }
+
   files.forEach((f) => fs.copyFileSync(path.join(src, f), path.join(destDir, f)));
   return files.length > 0;
 }

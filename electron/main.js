@@ -16,7 +16,7 @@ const { checkForUpdates, downloadAndInstall } = require('./services/updater');
 let mainWindow = null;
 let isQuitting = false;
 
-const PRESET_TYPES = ['cursors', 'sounds', 'fonts', 'skyboxes', 'materials'];
+const PRESET_TYPES = ['cursors', 'shiftlock', 'sounds', 'fonts', 'skyboxes', 'materials'];
 
 function send(channel, data) {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, data);

@@ -7,6 +7,7 @@ export default function Sidebar() {
 
   const tabs = [
     { id: 'cursors', label: 'Cursors', count: (cursorPresets ?? []).length, icon: <CursorIcon /> },
+    { id: 'shiftlock', label: 'Shiftlock', count: null, icon: <CursorIcon /> },
     { id: 'sounds', label: 'Sounds', count: (soundPresets ?? []).length, icon: <SoundIcon /> },
     { id: 'fonts', label: 'Fonts', count: null, icon: <FontIcon /> },
     { id: 'skyboxes', label: 'Skybox', count: null, icon: <SkyboxIcon /> },
@@ -15,6 +16,7 @@ export default function Sidebar() {
   ];
 
   const activeCount = (config.activeCursorPreset ? 1 : 0)
+    + (config.activeShiftlockPreset ? 1 : 0)
     + (config.activeSoundPreset ? 1 : 0)
     + (config.activeFontPreset ? 1 : 0)
     + (config.activeSkyboxPreset ? 1 : 0)

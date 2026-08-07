@@ -18,6 +18,7 @@ const PROJECT_ROOT = path.join(__dirname, '..', '..');
 
 const DIRS = {
   cursors: path.join(PROJECT_ROOT, 'custom-assets', 'cursors'),
+  shiftlock: path.join(PROJECT_ROOT, 'custom-assets', 'cursors'),
   sounds: path.join(PROJECT_ROOT, 'custom-assets', 'sounds'),
   fonts: path.join(PROJECT_ROOT, 'custom-assets', 'fonts'),
   skyboxes: path.join(PROJECT_ROOT, 'custom-assets', 'skyboxes'),
@@ -26,6 +27,7 @@ const DIRS = {
 };
 
 const CURSOR_SUBPATH = path.join('content', 'textures', 'Cursors', 'keyboardmouse');
+const SHIFTLOCK_SUBPATH = path.join('content', 'textures');
 const SOUND_SUBPATH = path.join('content', 'Sounds');
 const FONT_SUBPATH = path.join('content', 'fonts');
 const SKYBOX_SUBPATH = path.join('PlatformContent', 'pc', 'textures', 'sky');
@@ -34,7 +36,7 @@ const MATERIAL_SUBPATH = path.join('PlatformContent', 'pc', 'textures');
 const CONFIG_PATH = path.join(APP_DATA, 'config.json');
 
 const DEFAULT_CONFIG = {
-  activeCursorPreset: null, activeSoundPreset: null, activeFontPreset: null,
+  activeCursorPreset: null, activeShiftlockPreset: null, activeSoundPreset: null, activeFontPreset: null,
   activeSkyboxPreset: null, activeMaterialPreset: null, activeProfile: null,
   watcherEnabled: false, theme: '',
   startMinimized: false, previewVolume: 50, watcherInterval: 2,
@@ -79,7 +81,7 @@ function saveConfig(config) {
 
 module.exports = {
   APP_DATA, DIRS, CONFIG_PATH, DEFAULT_CONFIG,
-  CURSOR_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH,
+  CURSOR_SUBPATH, SHIFTLOCK_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH,
   IS_WINDOWS, IS_LINUX, IS_MAC,
   ensureDirs, loadConfig, saveConfig, cap,
 };

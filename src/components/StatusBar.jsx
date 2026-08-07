@@ -75,6 +75,7 @@ export default function StatusBar() {
 
   const activeCount =
     (config.activeCursorPreset ? 1 : 0) +
+    (config.activeShiftlockPreset ? 1 : 0) +
     (config.activeSoundPreset ? 1 : 0) +
     (config.activeFontPreset ? 1 : 0) +
     (config.activeSkyboxPreset ? 1 : 0) +

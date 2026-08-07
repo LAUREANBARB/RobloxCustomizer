@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const PRESET_TYPES = [
   { api: 'cursor', channel: 'cursors' },
+  { api: 'shiftlock', channel: 'shiftlock' },
   { api: 'sound', channel: 'sounds' },
   { api: 'font', channel: 'fonts' },
   { api: 'skybox', channel: 'skyboxes' },

@@ -6,6 +6,7 @@ const useStore = create((set) => ({
 
   config: {
     activeCursorPreset: null,
+    activeShiftlockPreset: null,
     activeSoundPreset: null,
     activeFontPreset: null,
     activeSkyboxPreset: null,
@@ -26,11 +27,13 @@ const useStore = create((set) => ({
   setSettingsOpen: (open) => set({ settingsOpen: open }),
 
   cursorPresets: [],
+  shiftlockPresets: [],
   soundPresets: [],
   fontPresets: [],
   skyboxPresets: [],
   materialPresets: [],
   setCursorPresets: (p) => set({ cursorPresets: p ?? [] }),
+  setShiftlockPresets: (p) => set({ shiftlockPresets: p ?? [] }),
   setSoundPresets: (p) => set({ soundPresets: p ?? [] }),
   setFontPresets: (p) => set({ fontPresets: p ?? [] }),
   setSkyboxPresets: (p) => set({ skyboxPresets: p ?? [] }),
