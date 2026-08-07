@@ -18,15 +18,15 @@ Electron, React, Vite, Tailwind CSS, zustand
 
 # how to run?:
 
-npm install
-npm start        # build + launch
-npm run dev      # dev mode with hot reload
+- npm install
+- npm start        # build + launch
+- npm run dev      # dev mode with hot reload
 
 # how to build?:
 
-npm run dist         # Windows
-npm run dist:linux   # Linux
-npm run dist:all     # Windows + Linux
+- npm run dist         # Windows
+- npm run dist:linux   # Linux
+- npm run dist:all     # Windows + Linux
 
 output in `release/`.
 
