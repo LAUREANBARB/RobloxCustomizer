@@ -11,7 +11,7 @@ const { getAllPresets, setActivePreset, removeActivePreset, deletePreset, getPre
 const { startWatcher, restartWatcherIfConfigChanged } = require('./services/watcher');
 const { createTray, rebuildMenu } = require('./services/tray');
 const { exportPack, importPack, backupConfig, restoreConfig } = require('./services/packs');
-const { checkForUpdates } = require('./services/updater');
+const { checkForUpdates, downloadAndInstall } = require('./services/updater');
 
 let mainWindow = null;
 let isQuitting = false;
@@ -184,13 +184,21 @@ ipcMain.handle('window-maximize', () => {
 });
 ipcMain.handle('window-close', () => { mainWindow?.close(); });
 
-ipcMain.handle('check-for-updates', () => {
-  return new Promise((resolve) => {
-    checkForUpdates(app.getVersion(), resolve);
-  });
+ipcMain.handle('check-for-updates', async () => {
+  return await checkForUpdates(app.getVersion());
 });
 
 ipcMain.handle('open-external', (_e, url) => { shell.openExternal(url); });
+
+ipcMain.handle('download-and-install', async (_e, updateInfo) => {
+  try {
+    await downloadAndInstall(updateInfo, mainWindow, (status) => {
+      send('update-status', { status });
+    });
+  } catch (err) {
+    send('update-status', { status: `Failed: ${err.message}`, error: true });
+  }
+});
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -217,10 +225,9 @@ app.whenReady().then(async () => {
     startWatcher(config.watcherInterval);
   }
 
-  setTimeout(() => {
-    checkForUpdates(app.getVersion(), (result) => {
-      if (result.updateAvailable) send('update-available', result);
-    });
+  setTimeout(async () => {
+    const update = await checkForUpdates(app.getVersion());
+    if (update) send('update-available', update);
   }, 5000);
 
   app.on('activate', () => { if (mainWindow) mainWindow.show(); });

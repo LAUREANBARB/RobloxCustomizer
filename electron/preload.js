@@ -69,6 +69,7 @@ contextBridge.exposeInMainWorld('api', {
   setAutostart: (enabled) => ipcRenderer.invoke('set-autostart', enabled),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadAndInstall: (info) => ipcRenderer.invoke('download-and-install', info),
 
   onModsReapplied: (cb) => {
     const handler = (_e, data) => cb(data);
@@ -84,5 +85,10 @@ contextBridge.exposeInMainWorld('api', {
     const handler = (_e, data) => cb(data);
     ipcRenderer.on('update-available', handler);
     return () => ipcRenderer.removeListener('update-available', handler);
+  },
+  onUpdateStatus: (cb) => {
+    const handler = (_e, data) => cb(data);
+    ipcRenderer.on('update-status', handler);
+    return () => ipcRenderer.removeListener('update-status', handler);
   },
 });
