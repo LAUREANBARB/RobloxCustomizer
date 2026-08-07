@@ -18,7 +18,7 @@ function ToggleButton({ enabled, onToggle }) {
 }
 
 export default function Settings() {
-  const { settingsOpen, setSettingsOpen, config, setConfig, setTheme, addNotification } = useStore();
+  const { settingsOpen, setSettingsOpen, setConfig, setTheme, addNotification } = useStore();
   const [localSettings, setLocalSettings] = useState({
     theme: '',
     startMinimized: false,
@@ -38,7 +38,7 @@ export default function Settings() {
         applyTheme(s.theme || '');
         setDirty(false);
       });
-      window.api.getAutostart().then((r) => setAutostart(r.enabled));
+      window.api.getAutostart().then((enabled) => setAutostart(enabled));
     }
   }, [settingsOpen]);
 
@@ -61,9 +61,7 @@ export default function Settings() {
   };
 
   const handleClose = async () => {
-    if (dirty) {
-      await handleSave();
-    }
+    if (dirty) await handleSave();
     setSettingsOpen(false);
   };
 
@@ -159,8 +157,7 @@ export default function Settings() {
             </div>
             <input
               type="range"
-              min="1"
-              max="10"
+              min="1" max="10"
               value={localSettings.watcherInterval}
               onChange={(e) => updateSetting('watcherInterval', parseInt(e.target.value))}
             />
@@ -172,7 +169,7 @@ export default function Settings() {
           <div className="settings-row">
             <div>
               <div className="settings-row-label">Start with Windows</div>
-              <div className="settings-row-desc">Launch on system boot</div>
+              <div className="settings-row-desc">Launch on system boot. Note: for Linux users this assumes you have systemd</div>
             </div>
             <ToggleButton enabled={autostart} onToggle={handleAutostart} />
           </div>
@@ -194,9 +191,7 @@ export default function Settings() {
             </div>
             <input
               type="range"
-              min="0"
-              max="100"
-              step="5"
+              min="0" max="100" step="5"
               value={localSettings.previewVolume}
               onChange={(e) => updateSetting('previewVolume', parseInt(e.target.value))}
             />

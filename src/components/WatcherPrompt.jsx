@@ -15,7 +15,7 @@ export default function WatcherPrompt() {
 
   const handleEnable = async () => {
     try {
-      const result = await window.api.toggleWatcher(true);
+      await window.api.toggleWatcher(true);
       const cfg = await window.api.getConfig();
       setConfig(cfg);
       addNotification('Auto-apply enabled', 'success');
@@ -52,23 +52,17 @@ export default function WatcherPrompt() {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
-              Enable Auto-Apply?
-            </p>
+            <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Enable Auto-Apply?</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              Automatically reapply your mods when Roblox updates. This keeps your customizations active without manual intervention.
+              Automatically reapply your mods when Roblox updates.
             </p>
             <div className="flex items-center gap-2 mt-3">
-              <button
-                onClick={handleEnable}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-[var(--success)] text-white shadow-[0_0_12px_rgba(74,222,128,0.3)] hover:shadow-[0_0_16px_rgba(74,222,128,0.4)]"
-              >
+              <button onClick={handleEnable}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-[var(--success)] text-white shadow-[0_0_12px_rgba(74,222,128,0.3)] hover:shadow-[0_0_16px_rgba(74,222,128,0.4)]">
                 Enable
               </button>
-              <button
-                onClick={handleDismiss}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-[var(--danger)] text-white shadow-[0_0_12px_rgba(248,113,113,0.2)] hover:shadow-[0_0_16px_rgba(248,113,113,0.3)]"
-              >
+              <button onClick={handleDismiss}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-[var(--danger)] text-white shadow-[0_0_12px_rgba(248,113,113,0.2)] hover:shadow-[0_0_16px_rgba(248,113,113,0.3)]">
                 Not now
               </button>
             </div>

@@ -5,7 +5,6 @@ import TitleBar from './components/TitleBar';
 import Sidebar from './components/Sidebar';
 import CursorGrid from './components/CursorGrid';
 import SoundGrid from './components/SoundGrid';
-import PresetsGrid from './components/PresetsGrid';
 import FontGrid from './components/FontGrid';
 import SkyboxGrid from './components/SkyboxGrid';
 import MaterialGrid from './components/MaterialGrid';
@@ -24,8 +23,6 @@ export default function App() {
     setFontPresets,
     setSkyboxPresets,
     setMaterialPresets,
-    setCategorizedCursors,
-    setCategorizedSounds,
     setConfig,
     setTheme,
     setRobloxVersion,
@@ -55,21 +52,13 @@ export default function App() {
       setTheme(config.theme || '');
       applyTheme(config.theme || '');
       setRobloxVersion(version);
-      setTimeout(async () => {
-        try {
-          const [categorized, running] = await Promise.all([
-            window.api.getCategorizedPresets(),
-            window.api.isRobloxRunning(),
-          ]);
-          setCategorizedCursors(categorized.cursors);
-          setCategorizedSounds(categorized.sounds);
-          setRobloxRunning(running);
-        } catch { addNotification('Failed to load presets', 'error'); }
-      }, 200);
-    } catch (e) {
+
+      const running = await window.api.isRobloxRunning();
+      setRobloxRunning(running);
+    } catch {
       addNotification('Failed to load data', 'error');
     }
-  }, []);
+  }, [addNotification, setConfig, setCursorPresets, setFontPresets, setMaterialPresets, setRobloxRunning, setRobloxVersion, setSkyboxPresets, setSoundPresets, setTheme]);
 
   useEffect(() => {
     loadData();
@@ -77,9 +66,6 @@ export default function App() {
 
     const onReapplied = (_e, result) => {
       if (mounted && result.success) addNotification(`Mods re-applied to ${result.version}`, 'success');
-    };
-    const onWatcher = (_e, enabled) => {
-      if (mounted) window.api.getConfig().then(setConfig);
     };
     const onTheme = (_e, theme) => {
       if (mounted) {
@@ -89,7 +75,6 @@ export default function App() {
     };
 
     const cleanupReapplied = window.api.onModsReapplied(onReapplied);
-    const cleanupWatcher = window.api.onWatcherChanged(onWatcher);
     const cleanupTheme = window.api.onThemeChanged(onTheme);
 
     loadInterval.current = setInterval(async () => {
@@ -102,10 +87,9 @@ export default function App() {
       mounted = false;
       clearInterval(loadInterval.current);
       cleanupReapplied?.();
-      cleanupWatcher?.();
       cleanupTheme?.();
     };
-  }, []);
+  }, [loadData, addNotification, setRobloxRunning, setTheme]);
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
@@ -115,7 +99,6 @@ export default function App() {
         <main className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6">
             <div key={activeTab} className="tab-enter">
-              {activeTab === 'presets' && <PresetsGrid />}
               {activeTab === 'cursors' && <CursorGrid />}
               {activeTab === 'sounds' && <SoundGrid />}
               {activeTab === 'fonts' && <FontGrid />}

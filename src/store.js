@@ -1,11 +1,9 @@
 import { create } from 'zustand';
 
 const useStore = create((set) => ({
-  // Tab
-  activeTab: 'presets',
+  activeTab: 'cursors',
   setActiveTab: (tab) => set({ activeTab: tab }),
 
-  // Config
   config: {
     activeCursorPreset: null,
     activeSoundPreset: null,
@@ -21,33 +19,23 @@ const useStore = create((set) => ({
   },
   setConfig: (config) => set({ config }),
 
-  // Theme
   theme: '',
   setTheme: (theme) => set({ theme }),
 
-  // Settings panel
   settingsOpen: false,
   setSettingsOpen: (open) => set({ settingsOpen: open }),
 
-  // Flat lists
   cursorPresets: [],
   soundPresets: [],
   fontPresets: [],
   skyboxPresets: [],
   materialPresets: [],
-  setCursorPresets: (p) => set({ cursorPresets: p }),
-  setSoundPresets: (p) => set({ soundPresets: p }),
-  setFontPresets: (p) => set({ fontPresets: p }),
-  setSkyboxPresets: (p) => set({ skyboxPresets: p }),
-  setMaterialPresets: (p) => set({ materialPresets: p }),
+  setCursorPresets: (p) => set({ cursorPresets: p ?? [] }),
+  setSoundPresets: (p) => set({ soundPresets: p ?? [] }),
+  setFontPresets: (p) => set({ fontPresets: p ?? [] }),
+  setSkyboxPresets: (p) => set({ skyboxPresets: p ?? [] }),
+  setMaterialPresets: (p) => set({ materialPresets: p ?? [] }),
 
-  // Categorized sections
-  categorizedCursors: [],
-  categorizedSounds: [],
-  setCategorizedCursors: (s) => set({ categorizedCursors: s }),
-  setCategorizedSounds: (s) => set({ categorizedSounds: s }),
-
-  // Roblox
   robloxVersion: null,
   robloxRunning: false,
   setRobloxVersion: (v) => set({ robloxVersion: v }),
@@ -55,22 +43,11 @@ const useStore = create((set) => ({
 
   previewCache: {},
   setPreview: (key, data) =>
-    set((s) => {
-      const cache = { ...s.previewCache, [key]: data };
-      const keys = Object.keys(cache);
-      if (keys.length > 100) {
-        // Evict oldest 20 entries
-        const toRemove = keys.slice(0, keys.length - 80);
-        toRemove.forEach((k) => delete cache[k]);
-      }
-      return { previewCache: cache };
-    }),
+    set((s) => ({ previewCache: { ...s.previewCache, [key]: data } })),
 
-  // Playing sound
   playingSound: null,
   setPlayingSound: (s) => set({ playingSound: s }),
 
-  // Notifications
   notifications: [],
   addNotification: (msg, type = 'info') => {
     const id = Date.now();

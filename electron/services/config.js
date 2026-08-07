@@ -14,21 +14,15 @@ function getAppDataDir() {
 
 const APP_DATA = getAppDataDir();
 
-const DIRS = {
-  cursors: path.join(APP_DATA, 'cursor-presets'),
-  sounds: path.join(APP_DATA, 'sound-presets'),
-  fonts: path.join(APP_DATA, 'font-presets'),
-  skyboxes: path.join(APP_DATA, 'skybox-presets'),
-  materials: path.join(APP_DATA, 'material-presets'),
-  profiles: path.join(APP_DATA, 'profiles'),
-};
+const PROJECT_ROOT = path.join(__dirname, '..', '..');
 
-const OWNER_DIRS = {
-  cursors: path.join(__dirname, '..', '..', 'custom-assets', 'cursors'),
-  sounds: path.join(__dirname, '..', '..', 'custom-assets', 'sounds'),
-  fonts: path.join(__dirname, '..', '..', 'custom-assets', 'fonts'),
-  skyboxes: path.join(__dirname, '..', '..', 'custom-assets', 'skyboxes'),
-  materials: path.join(__dirname, '..', '..', 'custom-assets', 'materials'),
+const DIRS = {
+  cursors: path.join(PROJECT_ROOT, 'custom-assets', 'cursors'),
+  sounds: path.join(PROJECT_ROOT, 'custom-assets', 'sounds'),
+  fonts: path.join(PROJECT_ROOT, 'custom-assets', 'fonts'),
+  skyboxes: path.join(PROJECT_ROOT, 'custom-assets', 'skyboxes'),
+  materials: path.join(PROJECT_ROOT, 'custom-assets', 'materials'),
+  profiles: path.join(APP_DATA, 'profiles'),
 };
 
 const CURSOR_SUBPATH = path.join('content', 'textures', 'Cursors', 'keyboardmouse');
@@ -42,9 +36,13 @@ const CONFIG_PATH = path.join(APP_DATA, 'config.json');
 const DEFAULT_CONFIG = {
   activeCursorPreset: null, activeSoundPreset: null, activeFontPreset: null,
   activeSkyboxPreset: null, activeMaterialPreset: null, activeProfile: null,
-  watcherEnabled: false, trayNotified: false, theme: '',
+  watcherEnabled: false, theme: '',
   startMinimized: false, previewVolume: 50, watcherInterval: 2,
 };
+
+function cap(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 let configCache = null;
 let configCacheTime = 0;
@@ -56,9 +54,9 @@ function ensureDirs() {
   });
 }
 
-function loadConfig(bypassCache) {
+function loadConfig() {
   const now = Date.now();
-  if (!bypassCache && configCache && (now - configCacheTime) < CONFIG_CACHE_TTL) return configCache;
+  if (configCache && (now - configCacheTime) < CONFIG_CACHE_TTL) return configCache;
   if (!fs.existsSync(CONFIG_PATH)) {
     const def = { ...DEFAULT_CONFIG };
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(def, null, 2));
@@ -80,8 +78,8 @@ function saveConfig(config) {
 }
 
 module.exports = {
-  APP_DATA, DIRS, OWNER_DIRS, CONFIG_PATH, DEFAULT_CONFIG,
+  APP_DATA, DIRS, CONFIG_PATH, DEFAULT_CONFIG,
   CURSOR_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH,
   IS_WINDOWS, IS_LINUX, IS_MAC,
-  ensureDirs, loadConfig, saveConfig,
+  ensureDirs, loadConfig, saveConfig, cap,
 };

@@ -4,8 +4,7 @@ const archiver = require('archiver');
 const extract = require('extract-zip');
 const { dialog } = require('electron');
 const { DIRS, loadConfig, saveConfig } = require('./config');
-const { applyPreset, reapplyAllMods, getPresetFiles } = require('./presets');
-const { getLatestRobloxVersion } = require('./roblox');
+const { reapplyAllMods } = require('./presets');
 
 function exportPack(type, presetName, win) {
   const presetDir = path.join(DIRS[type], presetName);
@@ -59,7 +58,6 @@ async function importPack(win) {
       if (fs.statSync(srcFile).isFile()) fs.copyFileSync(srcFile, path.join(destDir, file));
     });
 
-    // Check for subdirectory (flat or nested pack)
     const subdirs = fs.readdirSync(tempDir).filter((d) => fs.statSync(path.join(tempDir, d)).isDirectory());
     subdirs.forEach((sub) => {
       fs.readdirSync(path.join(tempDir, sub)).forEach((file) => {

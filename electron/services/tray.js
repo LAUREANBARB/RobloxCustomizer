@@ -34,6 +34,7 @@ function rebuildMenu() {
   const config = loadConfig();
   const version = getLatestRobloxVersion();
   const running = isRobloxRunning();
+
   const activePresets = ['Cursor', 'Sound', 'Font', 'Skybox', 'Material']
     .map((label) => {
       const key = 'active' + label + 'Preset';
@@ -70,11 +71,6 @@ function rebuildMenu() {
   });
 
   tray.setContextMenu(Menu.buildFromTemplate(menuItems));
-}
-
-function updateTrayMenu() {
-  // Rebuilds on next interaction; tray.setContextMenu forces update
-  // Called by IPC handlers after config changes
 }
 
 module.exports = { createTray, rebuildMenu };

@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
-const { DIRS, OWNER_DIRS, PROFILES_DIR, CURSOR_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH, loadConfig, saveConfig, IS_LINUX } = require('./config');
-const { getRobloxBase, getRobloxOverlayDir, isSoberRoblox, getLatestRobloxVersion } = require('./roblox');
+const { DIRS, CURSOR_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH, loadConfig, saveConfig, IS_LINUX, cap } = require('./config');
+const { getRobloxBase, getRobloxOverlayDir, getLatestRobloxVersion } = require('./roblox');
 
 const PRESET_TYPES = {
   cursors: {
@@ -31,43 +31,9 @@ const PRESET_TYPES = {
   },
 };
 
-function cap(type) {
-  return type.charAt(0).toUpperCase() + type.slice(1);
-}
-
 function activeKey(type) {
-  return 'active' + cap(type) + 'Preset';
+  return 'active' + cap(type.replace(/s$/, '')) + 'Preset';
 }
-
-// -- Bundled presets ---------------------------------------------------------
-
-function syncBundledPresets() {
-  const bundledBase = path.join(__dirname, '..', '..', 'custom-assets');
-  if (!fs.existsSync(bundledBase)) return;
-
-  const mappings = Object.keys(PRESET_TYPES).map((type) => ({
-    src: path.join(bundledBase, type === 'cursors' ? 'cursors' : type),
-    dest: DIRS[type],
-  }));
-
-  mappings.forEach(({ src, dest }) => {
-    if (!fs.existsSync(src)) return;
-    fs.readdirSync(src)
-      .filter((d) => fs.statSync(path.join(src, d)).isDirectory())
-      .forEach((presetName) => {
-        const srcDir = path.join(src, presetName);
-        const destDir = path.join(dest, presetName);
-        if (fs.existsSync(destDir)) return;
-        fs.mkdirSync(destDir, { recursive: true });
-        fs.readdirSync(srcDir).forEach((file) => {
-          const srcFile = path.join(srcDir, file);
-          if (fs.statSync(srcFile).isFile()) fs.copyFileSync(srcFile, path.join(destDir, file));
-        });
-      });
-  });
-}
-
-// -- Scanning & resolution ---------------------------------------------------
 
 function scanTypeDirs(type) {
   if (!DIRS[type]) return [];
@@ -82,14 +48,10 @@ function getPresetFiles(type, presetName) {
 }
 
 function resolvePresetDir(type, name) {
-  const userPath = path.join(DIRS[type], name);
-  if (fs.existsSync(userPath)) return { dir: userPath, source: 'custom' };
-  const ownerPath = path.join(OWNER_DIRS[type], name);
-  if (fs.existsSync(ownerPath)) return { dir: ownerPath, source: 'owner' };
+  const dir = path.join(DIRS[type], name);
+  if (fs.existsSync(dir)) return { dir, source: 'custom' };
   return null;
 }
-
-// -- Apply helpers -----------------------------------------------------------
 
 function getOverlayOrRobloxDir(type, versionDir) {
   const overlayDir = getRobloxOverlayDir();
@@ -134,15 +96,19 @@ function reapplyAllMods(version) {
   return { success: true, version, applied };
 }
 
-// -- IPC-friendly handler functions ------------------------------------------
-
 function getAllPresets(type) {
   const config = loadConfig();
   const key = activeKey(type);
-  return {
-    presets: scanTypeDirs(type),
-    active: config[key] || null,
-  };
+  const activeName = config[key] || null;
+  return scanTypeDirs(type).map((name) => {
+    const resolved = resolvePresetDir(type, name);
+    return {
+      name,
+      files: getPresetFiles(type, name),
+      source: resolved ? resolved.source : 'custom',
+      active: name === activeName,
+    };
+  });
 }
 
 function setActivePreset(type, presetName) {
@@ -181,44 +147,56 @@ function deletePreset(type, presetName) {
   return { success: true };
 }
 
-function getPreviewData(type, presetName, fileName, source) {
+function getPreviewData(type, presetName, fileName) {
   const MAX_SIZE = 5 * 1024 * 1024;
-  const base = source === 'owner' ? OWNER_DIRS[type] : DIRS[type];
+  const base = DIRS[type];
   const filePath = path.join(base, presetName, fileName);
   const resolved = path.resolve(filePath);
-  if (!resolved.startsWith(path.resolve(base) + path.sep)) return { error: 'Invalid path' };
-  if (!fs.existsSync(resolved)) return { error: 'File not found' };
+  if (!resolved.startsWith(path.resolve(base) + path.sep)) return null;
+  if (!fs.existsSync(resolved)) return null;
   const stat = fs.statSync(resolved);
-  if (stat.size > MAX_SIZE) return { error: 'File too large' };
+  if (stat.size > MAX_SIZE) return null;
   const ext = path.extname(fileName).toLowerCase();
   if (ext === '.png') {
-    return { data: fs.readFileSync(resolved).toString('base64'), type: 'image/png' };
+    return 'data:image/png;base64,' + fs.readFileSync(resolved).toString('base64');
   }
   if (['.ogg', '.mp3', '.wav'].includes(ext)) {
-    return { data: fs.readFileSync(resolved).toString('base64'), type: 'audio/' + (ext === '.ogg' ? 'ogg' : ext.slice(1)) };
+    const mime = ext === '.ogg' ? 'audio/ogg' : 'audio/' + ext.slice(1);
+    return 'data:' + mime + ';base64,' + fs.readFileSync(resolved).toString('base64');
   }
-  return { error: 'Unsupported file type' };
+  return null;
 }
-
-// -- Categorized ------------------------------------------------------------
 
 function getCategorizedPresets() {
   const result = {};
   Object.keys(PRESET_TYPES).forEach((type) => {
-    result[type] = scanTypeDirs(type);
+    const presetNames = scanTypeDirs(type);
+    const groups = {};
+    presetNames.forEach((name) => {
+      const resolved = resolvePresetDir(type, name);
+      const source = resolved ? resolved.source : 'custom';
+      if (!groups[source]) groups[source] = [];
+      groups[source].push({
+        name,
+        files: getPresetFiles(type, name),
+        source,
+      });
+    });
+    result[type] = Object.entries(groups).map(([source, presets]) => ({
+      name: source.charAt(0).toUpperCase() + source.slice(1), // Bundled / Custom
+      presets,
+    }));
   });
   return result;
 }
 
-// -- Profiles ---------------------------------------------------------------
-
 function listProfiles() {
-  if (!fs.existsSync(PROFILES_DIR)) return [];
-  return fs.readdirSync(PROFILES_DIR)
+  if (!fs.existsSync(DIRS.profiles)) return [];
+  return fs.readdirSync(DIRS.profiles)
     .filter((f) => f.endsWith('.json'))
     .map((f) => {
       try {
-        return JSON.parse(fs.readFileSync(path.join(PROFILES_DIR, f), 'utf-8'));
+        return JSON.parse(fs.readFileSync(path.join(DIRS.profiles, f), 'utf-8'));
       } catch (err) {
         console.error('Failed to parse profile:', err.message); return null; }
     })
@@ -226,16 +204,23 @@ function listProfiles() {
 }
 
 function saveProfile(profile) {
-  if (!fs.existsSync(PROFILES_DIR)) fs.mkdirSync(PROFILES_DIR, { recursive: true });
-  fs.writeFileSync(path.join(PROFILES_DIR, profile.name + '.json'), JSON.stringify(profile, null, 2));
+  if (!fs.existsSync(DIRS.profiles)) fs.mkdirSync(DIRS.profiles, { recursive: true });
+  fs.writeFileSync(path.join(DIRS.profiles, profile.name + '.json'), JSON.stringify(profile, null, 2));
   return { success: true };
 }
 
+const PROFILE_KEYS = {
+  cursor: 'activeCursorPreset',
+  sound: 'activeSoundPreset',
+  font: 'activeFontPreset',
+  skybox: 'activeSkyboxPreset',
+  material: 'activeMaterialPreset',
+};
+
 function applyProfile(profile) {
   const config = loadConfig();
-  Object.keys(PRESET_TYPES).forEach((type) => {
-    const ak = activeKey(type);
-    config[ak] = profile[ak] || null;
+  Object.entries(PROFILE_KEYS).forEach(([shortKey, ak]) => {
+    config[ak] = profile[shortKey] || null;
   });
   config.activeProfile = profile.name || null;
   saveConfig(config);
@@ -244,15 +229,13 @@ function applyProfile(profile) {
 }
 
 function deleteProfile(name) {
-  const filePath = path.join(PROFILES_DIR, name + '.json');
+  const filePath = path.join(DIRS.profiles, name + '.json');
   if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   return { success: true };
 }
 
 module.exports = {
-  cap,
   activeKey,
-  syncBundledPresets,
   scanTypeDirs,
   getPresetFiles,
   resolvePresetDir,

@@ -1,14 +1,20 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-const PRESET_TYPES = ['cursor', 'sound', 'font', 'skybox', 'material'];
+const PRESET_TYPES = [
+  { api: 'cursor', channel: 'cursors' },
+  { api: 'sound', channel: 'sounds' },
+  { api: 'font', channel: 'fonts' },
+  { api: 'skybox', channel: 'skyboxes' },
+  { api: 'material', channel: 'materials' },
+];
 
-function presetApi(type) {
-  const cap = type.charAt(0).toUpperCase() + type.slice(1);
+function presetApi({ api, channel }) {
+  const cap = api.charAt(0).toUpperCase() + api.slice(1);
   return {
-    [`get${cap}Presets`]: () => ipcRenderer.invoke(`get-${type}-presets`),
-    [`apply${cap}Preset`]: (name) => ipcRenderer.invoke(`apply-${type}-preset`, name),
-    [`remove${cap}Preset`]: () => ipcRenderer.invoke(`remove-${type}-preset`),
-    [`delete${cap}Preset`]: (name) => ipcRenderer.invoke(`delete-${type}-preset`, name),
+    [`get${cap}Presets`]: () => ipcRenderer.invoke(`get-${channel}-presets`),
+    [`apply${cap}Preset`]: (name) => ipcRenderer.invoke(`apply-${channel}-preset`, name),
+    [`remove${cap}Preset`]: () => ipcRenderer.invoke(`remove-${channel}-preset`),
+    [`delete${cap}Preset`]: (name) => ipcRenderer.invoke(`delete-${channel}-preset`, name),
   };
 }
 
@@ -36,8 +42,6 @@ contextBridge.exposeInMainWorld('api', {
   restoreBackup: () => ipcRenderer.invoke('restore-backup'),
   getWelcomeDismissed: () => ipcRenderer.invoke('get-welcome-dismissed'),
   setWelcomeDismissed: (v) => ipcRenderer.invoke('set-welcome-dismissed', v),
-  getRobloxSoundFiles: () => ipcRenderer.invoke('get-roblox-sound-files'),
-  getRobloxCursorFiles: () => ipcRenderer.invoke('get-roblox-cursor-files'),
   isRobloxRunning: () => ipcRenderer.invoke('is-roblox-running'),
   killRoblox: () => ipcRenderer.invoke('kill-roblox'),
   restartRoblox: () => ipcRenderer.invoke('restart-roblox'),
@@ -68,11 +72,6 @@ contextBridge.exposeInMainWorld('api', {
     const handler = (_e, data) => cb(data);
     ipcRenderer.on('mods-reapplied', handler);
     return () => ipcRenderer.removeListener('mods-reapplied', handler);
-  },
-  onWatcherChanged: (cb) => {
-    const handler = (_e, enabled) => cb(enabled);
-    ipcRenderer.on('watcher-changed', handler);
-    return () => ipcRenderer.removeListener('watcher-changed', handler);
   },
   onThemeChanged: (cb) => {
     const handler = (_e, theme) => cb(theme);

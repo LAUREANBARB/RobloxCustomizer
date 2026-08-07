@@ -1,27 +1,20 @@
 import React from 'react';
 import useStore from '../store';
+import { CursorIcon, SoundIcon, FontIcon, SkyboxIcon, MaterialIcon, ProfileIcon } from './icons';
 
 export default function Sidebar() {
   const { activeTab, setActiveTab, config, cursorPresets, soundPresets } = useStore();
 
   const tabs = [
-    { id: 'presets', label: 'Presets', count: null,
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/><rect x="10" y="2" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/><rect x="2" y="10" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/><rect x="10" y="10" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/></svg> },
-    { id: 'cursors', label: 'Cursors', count: cursorPresets.length,
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 2L15 9L9 10L7 16L3 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"/></svg> },
-    { id: 'sounds', label: 'Sounds', count: soundPresets.length,
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 7V11M6 5V13M9 3V15M12 6V12M15 8V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg> },
-    { id: 'fonts', label: 'Fonts', count: null,
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 4H14M9 4V15M6 15H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
-    { id: 'skyboxes', label: 'Skybox', count: null,
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M9 2C6 6 6 12 9 16C12 12 12 6 9 2Z" stroke="currentColor" strokeWidth="1.2" fill="none"/></svg> },
-    { id: 'materials', label: 'Materials', count: null,
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/><rect x="5" y="5" width="3" height="3" rx="0.5" stroke="currentColor" strokeWidth="1" fill="none"/><rect x="10" y="5" width="3" height="3" rx="0.5" stroke="currentColor" strokeWidth="1" fill="none"/><rect x="5" y="10" width="3" height="3" rx="0.5" stroke="currentColor" strokeWidth="1" fill="none"/><rect x="10" y="10" width="3" height="3" rx="0.5" stroke="currentColor" strokeWidth="1" fill="none"/></svg> },
-    { id: 'profiles', label: 'Profiles', count: null,
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 2H14V16H4V2Z" stroke="currentColor" strokeWidth="1.5" fill="none"/><path d="M7 6H11M7 9H11M7 12H9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg> },
+    { id: 'cursors', label: 'Cursors', count: (cursorPresets ?? []).length, icon: <CursorIcon /> },
+    { id: 'sounds', label: 'Sounds', count: (soundPresets ?? []).length, icon: <SoundIcon /> },
+    { id: 'fonts', label: 'Fonts', count: null, icon: <FontIcon /> },
+    { id: 'skyboxes', label: 'Skybox', count: null, icon: <SkyboxIcon /> },
+    { id: 'materials', label: 'Materials', count: null, icon: <MaterialIcon /> },
+    { id: 'profiles', label: 'Profiles', count: null, icon: <ProfileIcon /> },
   ];
 
-  const activeCount = config.activeCursorPreset ? 1 : 0
+  const activeCount = (config.activeCursorPreset ? 1 : 0)
     + (config.activeSoundPreset ? 1 : 0)
     + (config.activeFontPreset ? 1 : 0)
     + (config.activeSkyboxPreset ? 1 : 0)

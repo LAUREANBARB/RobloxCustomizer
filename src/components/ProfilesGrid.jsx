@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import useStore from '../store';
+import { Check, Spinner } from './icons';
 
 export default function ProfilesGrid() {
   const {
-    config, cursorPresets, soundPresets, fontPresets, skyboxPresets, materialPresets,
-    setConfig, addNotification,
+    config, setConfig, addNotification,
   } = useStore();
   const [profiles, setProfiles] = useState([]);
   const [creating, setCreating] = useState(false);
@@ -15,24 +15,29 @@ export default function ProfilesGrid() {
     try { const p = await window.api.getProfiles(); setProfiles(p); } catch { addNotification('Failed to load profiles', 'error'); }
   };
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { loadProfiles(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try { const p = await window.api.getProfiles(); if (!cancelled) setProfiles(p); }
+      catch { addNotification('Failed to load profiles', 'error'); }
+    })();
+    return () => { cancelled = true; };
+  }, [addNotification]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
-    const profile = {
+    await window.api.saveProfile({
       name: newName.trim(),
       cursor: config.activeCursorPreset,
       sound: config.activeSoundPreset,
       font: config.activeFontPreset,
       skybox: config.activeSkyboxPreset,
       material: config.activeMaterialPreset,
-    };
-    await window.api.saveProfile(profile);
+    });
     setNewName('');
     setCreating(false);
     loadProfiles();
-    addNotification(`Profile "${profile.name}" created`, 'success');
+    addNotification(`Profile "${newName.trim()}" created`, 'success');
   };
 
   const handleApply = async (profile) => {
@@ -81,7 +86,6 @@ export default function ProfilesGrid() {
         </div>
       </div>
 
-      {/* Create profile form */}
       {creating && (
         <div className="card p-4 mb-6 fade-in">
           <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Save current as profile</p>
@@ -109,7 +113,6 @@ export default function ProfilesGrid() {
         </div>
       )}
 
-      {/* Profile list */}
       {profiles.length === 0 && !creating ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center mb-5">
@@ -128,19 +131,14 @@ export default function ProfilesGrid() {
           {profiles.map((profile, i) => {
             const isActive = config.activeProfile === profile.name;
             const isLoading = loading === profile.name;
-
             return (
               <div key={profile.name} className={`card-stagger card p-5 group relative ${isActive ? 'card-active' : ''}`} style={{ animationDelay: `${i * 0.1}s` }}>
                 {isActive && (
                   <div className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center z-10" style={{ background: 'var(--accent)' }}>
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                      <path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                    <Check className="text-white" />
                   </div>
                 )}
-
                 <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>{profile.name}</h3>
-
                 <div className="space-y-1.5 mb-4">
                   {profile.cursor && <div className="flex items-center gap-2 text-xs"><span style={{ color: 'var(--text-dim)' }}>Cursor</span><span style={{ color: 'var(--text-secondary)' }}>{profile.cursor}</span></div>}
                   {profile.sound && <div className="flex items-center gap-2 text-xs"><span style={{ color: 'var(--text-dim)' }}>Sound</span><span style={{ color: 'var(--text-secondary)' }}>{profile.sound}</span></div>}
@@ -148,19 +146,15 @@ export default function ProfilesGrid() {
                   {profile.skybox && <div className="flex items-center gap-2 text-xs"><span style={{ color: 'var(--text-dim)' }}>Skybox</span><span style={{ color: 'var(--text-secondary)' }}>{profile.skybox}</span></div>}
                   {profile.material && <div className="flex items-center gap-2 text-xs"><span style={{ color: 'var(--text-dim)' }}>Material</span><span style={{ color: 'var(--text-secondary)' }}>{profile.material}</span></div>}
                 </div>
-
                 <div className="flex gap-2">
                   <button onClick={() => handleApply(profile)} className={`flex-1 text-xs py-2 rounded-xl font-medium transition-all ${isActive ? 'bg-[var(--accent-glow)] text-[var(--accent-light)] border border-[var(--border-accent)]' : 'btn'}`}>
                     {isActive ? 'Active' : 'Apply'}
                   </button>
                   <button onClick={() => handleDelete(profile.name)} className="btn btn-danger text-xs py-2 px-3">Del</button>
                 </div>
-
                 {isLoading && (
                   <div className="absolute inset-0 rounded-2xl bg-black/40 flex items-center justify-center z-20">
-                    <svg className="animate-spin w-6 h-6" style={{ color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="32" strokeLinecap="round"/>
-                    </svg>
+                    <Spinner size={24} className="text-accent" />
                   </div>
                 )}
               </div>

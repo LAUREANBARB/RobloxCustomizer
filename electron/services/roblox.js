@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const { execSync, execFile } = require('child_process');
-const { DIRS, IS_WINDOWS, IS_LINUX, IS_MAC } = require('./config');
+const { IS_WINDOWS, IS_LINUX, IS_MAC } = require('./config');
 
 function isSoberRoblox() {
   if (!IS_LINUX) return false;
@@ -41,10 +41,12 @@ function getRobloxBase() {
 
 function getLatestRobloxVersion() {
   if (IS_LINUX && isSoberRoblox()) return 'latest';
-  if (!fs.existsSync(getRobloxBase())) return null;
 
-  const dirs = fs.readdirSync(getRobloxBase()).filter((d) => {
-    const full = path.join(getRobloxBase(), d);
+  const base = getRobloxBase();
+  if (!base || !fs.existsSync(base)) return null;
+
+  const dirs = fs.readdirSync(base).filter((d) => {
+    const full = path.join(base, d);
     return fs.statSync(full).isDirectory() && d.startsWith('version-');
   });
   if (dirs.length === 0) return null;
@@ -52,25 +54,25 @@ function getLatestRobloxVersion() {
   const isLinuxRoblox = isSoberRoblox();
   const validDirs = dirs.filter((d) => {
     if (isLinuxRoblox) {
-      return fs.existsSync(path.join(getRobloxBase(), d, 'RobloxPlayerBeta')) ||
-             fs.existsSync(path.join(getRobloxBase(), d, 'RobloxPlayerBeta.so'));
+      return fs.existsSync(path.join(base, d, 'RobloxPlayerBeta')) ||
+             fs.existsSync(path.join(base, d, 'RobloxPlayerBeta.so'));
     }
-    return fs.existsSync(path.join(getRobloxBase(), d, 'RobloxPlayerBeta.exe'));
+    return fs.existsSync(path.join(base, d, 'RobloxPlayerBeta.exe'));
   });
   if (validDirs.length === 0) return null;
 
   validDirs.sort((a, b) => {
     let statA, statB;
     if (isLinuxRoblox) {
-      const exeA = path.join(getRobloxBase(), a, 'RobloxPlayerBeta');
-      const exeB = path.join(getRobloxBase(), b, 'RobloxPlayerBeta');
-      const altA = path.join(getRobloxBase(), a, 'RobloxPlayerBeta.so');
-      const altB = path.join(getRobloxBase(), b, 'RobloxPlayerBeta.so');
+      const exeA = path.join(base, a, 'RobloxPlayerBeta');
+      const exeB = path.join(base, b, 'RobloxPlayerBeta');
+      const altA = path.join(base, a, 'RobloxPlayerBeta.so');
+      const altB = path.join(base, b, 'RobloxPlayerBeta.so');
       statA = fs.existsSync(exeA) ? fs.statSync(exeA) : (fs.existsSync(altA) ? fs.statSync(altA) : null);
       statB = fs.existsSync(exeB) ? fs.statSync(exeB) : (fs.existsSync(altB) ? fs.statSync(altB) : null);
     } else {
-      statA = fs.statSync(path.join(getRobloxBase(), a, 'RobloxPlayerBeta.exe'));
-      statB = fs.statSync(path.join(getRobloxBase(), b, 'RobloxPlayerBeta.exe'));
+      statA = fs.statSync(path.join(base, a, 'RobloxPlayerBeta.exe'));
+      statB = fs.statSync(path.join(base, b, 'RobloxPlayerBeta.exe'));
     }
     if (!statA || !statB) return 0;
     return statB.mtimeMs - statA.mtimeMs;
@@ -79,18 +81,19 @@ function getLatestRobloxVersion() {
 }
 
 function getOldRobloxVersions() {
-  if ((IS_LINUX && isSoberRoblox()) || !fs.existsSync(getRobloxBase())) return [];
+  const base = getRobloxBase();
+  if ((IS_LINUX && isSoberRoblox()) || !base || !fs.existsSync(base)) return [];
   const currentVersion = getLatestRobloxVersion();
   if (!currentVersion) return [];
   const isLinuxRoblox = isSoberRoblox();
-  return fs.readdirSync(getRobloxBase()).filter((d) => {
-    const full = path.join(getRobloxBase(), d);
+  return fs.readdirSync(base).filter((d) => {
+    const full = path.join(base, d);
     let hasPlayer;
     if (isLinuxRoblox) {
-      hasPlayer = fs.existsSync(path.join(getRobloxBase(), d, 'RobloxPlayerBeta')) ||
-                  fs.existsSync(path.join(getRobloxBase(), d, 'RobloxPlayerBeta.so'));
+      hasPlayer = fs.existsSync(path.join(base, d, 'RobloxPlayerBeta')) ||
+                  fs.existsSync(path.join(base, d, 'RobloxPlayerBeta.so'));
     } else {
-      hasPlayer = fs.existsSync(path.join(getRobloxBase(), d, 'RobloxPlayerBeta.exe'));
+      hasPlayer = fs.existsSync(path.join(base, d, 'RobloxPlayerBeta.exe'));
     }
     return fs.statSync(full).isDirectory() && d.startsWith('version-') && d !== currentVersion && hasPlayer;
   });
@@ -108,8 +111,12 @@ function isRobloxRunning() {
       const output = execSync('tasklist /FI "IMAGENAME eq RobloxPlayerBeta.exe" /NH', { encoding: 'utf-8', timeout: 5000 });
       robloxRunningCache = output.includes('RobloxPlayerBeta.exe');
     } else {
-      const output = execSync('ps aux', { encoding: 'utf-8', timeout: 5000 });
-      robloxRunningCache = output.includes('RobloxPlayerBeta') && !output.includes('grep');
+      try {
+        execSync('pgrep -f RobloxPlayerBeta', { encoding: 'utf-8', timeout: 5000 });
+        robloxRunningCache = true;
+      } catch {
+        robloxRunningCache = false;
+      }
     }
     robloxRunningCacheTime = now;
     return robloxRunningCache;
@@ -146,29 +153,14 @@ function launchRoblox() {
 
 function cleanOldVersions() {
   const old = getOldRobloxVersions();
-  old.forEach((v) => fs.rmSync(path.join(getRobloxBase(), v), { recursive: true, force: true }));
+  const base = getRobloxBase();
+  old.forEach((v) => fs.rmSync(path.join(base, v), { recursive: true, force: true }));
   return { success: true, removed: old.length };
-}
-
-function getRobloxSoundFiles() {
-  const version = getLatestRobloxVersion();
-  if (!version) return [];
-  const dir = path.join(getRobloxBase(), version, 'content', 'Sounds');
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir).filter((f) => f.endsWith('.ogg') || f.endsWith('.mp3') || f.endsWith('.wav'));
-}
-
-function getRobloxCursorFiles() {
-  const version = getLatestRobloxVersion();
-  if (!version) return [];
-  const dir = path.join(getRobloxBase(), version, 'content', 'textures', 'Cursors', 'keyboardmouse');
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir).filter((f) => f.endsWith('.png'));
 }
 
 module.exports = {
   getRobloxBase, getRobloxOverlayDir, isSoberRoblox,
   getLatestRobloxVersion, getOldRobloxVersions,
   isRobloxRunning, killRobloxProcess, launchRoblox,
-  cleanOldVersions, getRobloxSoundFiles, getRobloxCursorFiles,
+  cleanOldVersions,
 };

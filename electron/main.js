@@ -1,11 +1,14 @@
-const { app, BrowserWindow, ipcMain, shell, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
-const fs = require('fs');
 
-const { loadConfig, saveConfig, ensureDirs, IS_LINUX, IS_WINDOWS, DIRS, CONFIG_PATH } = require('./services/config');
-const { getLatestRobloxVersion, getOldRobloxVersions, isRobloxRunning, killRobloxProcess, launchRoblox, cleanOldVersions, getRobloxSoundFiles, getRobloxCursorFiles } = require('./services/roblox');
-const { syncBundledPresets, getAllPresets, setActivePreset, removeActivePreset, deletePreset, getPreviewData, reapplyAllMods, getCategorizedPresets, listProfiles, saveProfile, applyProfile, deleteProfile, activeKey } = require('./services/presets');
-const { startWatcher, stopWatcher, restartWatcherIfConfigChanged } = require('./services/watcher');
+if (process.platform === 'linux') {
+  app.disableHardwareAcceleration();
+}
+
+const { loadConfig, saveConfig, ensureDirs, IS_LINUX, DIRS } = require('./services/config');
+const { getLatestRobloxVersion, getOldRobloxVersions, isRobloxRunning, killRobloxProcess, launchRoblox, cleanOldVersions } = require('./services/roblox');
+const { getAllPresets, setActivePreset, removeActivePreset, deletePreset, getPreviewData, reapplyAllMods, getCategorizedPresets, listProfiles, saveProfile, applyProfile, deleteProfile, activeKey } = require('./services/presets');
+const { startWatcher, restartWatcherIfConfigChanged } = require('./services/watcher');
 const { createTray, rebuildMenu } = require('./services/tray');
 const { exportPack, importPack, backupConfig, restoreConfig } = require('./services/packs');
 
@@ -14,26 +17,21 @@ let isQuitting = false;
 
 const PRESET_TYPES = ['cursors', 'sounds', 'fonts', 'skyboxes', 'materials'];
 
-// -- Helpers -----------------------------------------------------------------
-
 function send(channel, data) {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, data);
 }
 
 function handleConfigChange(newConfig) {
   saveConfig(newConfig);
-  restartWatcherIfConfigChanged(newConfig, mainWindow);
+  restartWatcherIfConfigChanged(newConfig);
   rebuildMenu();
 }
-
-// -- Window ------------------------------------------------------------------
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280, height: 800, minWidth: 900, minHeight: 600,
     show: false,
-    frame: false, transparent: true,
-    icon: path.join(__dirname, '..', 'assets', 'icon.png'),
+    frame: false, backgroundColor: '#000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -65,8 +63,6 @@ function createWindow() {
   mainWindow.on('closed', () => { mainWindow = null; });
 }
 
-// -- IPC: Config -------------------------------------------------------------
-
 ipcMain.handle('get-config', () => loadConfig());
 ipcMain.handle('save-config', (_e, c) => { handleConfigChange(c); return { success: true }; });
 
@@ -78,16 +74,7 @@ ipcMain.handle('set-welcome-dismissed', (_e, v) => {
   return { success: true };
 });
 
-ipcMain.handle('get-settings', () => {
-  const config = loadConfig();
-  try {
-    const autoStart = app.getLoginItemSettings().openAtLogin;
-    return { ...config, autoStart };
-  } catch (err) {
-    console.error('Failed to read auto-start status:', err.message);
-    return { ...config, autoStart: false };
-  }
-});
+ipcMain.handle('get-settings', () => loadConfig());
 
 ipcMain.handle('save-settings', (_e, settings) => {
   const config = loadConfig();
@@ -95,8 +82,6 @@ ipcMain.handle('save-settings', (_e, settings) => {
   handleConfigChange(config);
   return { success: true };
 });
-
-// -- IPC: Roblox -------------------------------------------------------------
 
 ipcMain.handle('get-roblox-version', () => getLatestRobloxVersion());
 ipcMain.handle('get-old-roblox-versions', () => getOldRobloxVersions());
@@ -108,18 +93,11 @@ ipcMain.handle('restart-roblox', () => {
   setTimeout(() => launchRoblox(), 1000);
   return { success: true };
 });
-ipcMain.handle('get-roblox-sound-files', () => getRobloxSoundFiles());
-ipcMain.handle('get-roblox-cursor-files', () => getRobloxCursorFiles());
-
-// -- IPC: Backup -------------------------------------------------------------
 
 ipcMain.handle('backup-all', () => backupConfig(mainWindow));
 ipcMain.handle('restore-backup', () => restoreConfig(mainWindow));
 
-// -- IPC: Presets (generic, type-driven) -------------------------------------
-
 PRESET_TYPES.forEach((type) => {
-
   ipcMain.handle(`get-${type}-presets`, () => getAllPresets(type));
   ipcMain.handle(`apply-${type}-preset`, (_e, name) => {
     const r = setActivePreset(type, name);
@@ -138,15 +116,10 @@ PRESET_TYPES.forEach((type) => {
   });
 });
 
-// Preview handlers (cursors + sounds only)
 ipcMain.handle('get-cursor-preview', (_e, preset, file, source) => getPreviewData('cursors', preset, file, source));
 ipcMain.handle('get-sound-preview', (_e, preset, file, source) => getPreviewData('sounds', preset, file, source));
 
-// -- IPC: Categorized --------------------------------------------------------
-
 ipcMain.handle('get-categorized-presets', () => getCategorizedPresets());
-
-// -- IPC: Profiles -----------------------------------------------------------
 
 ipcMain.handle('get-profiles', () => listProfiles());
 ipcMain.handle('save-profile', (_e, p) => saveProfile(p));
@@ -157,16 +130,12 @@ ipcMain.handle('apply-profile', (_e, p) => {
 });
 ipcMain.handle('delete-profile', (_e, n) => deleteProfile(n));
 
-// -- IPC: Watcher ------------------------------------------------------------
-
 ipcMain.handle('toggle-watcher', (_e, enabled) => {
   const config = loadConfig();
   config.watcherEnabled = enabled;
   handleConfigChange(config);
-  return { success: true };
+  return { success: true, watcherEnabled: enabled };
 });
-
-// -- IPC: Reapply ------------------------------------------------------------
 
 ipcMain.handle('reapply-all', () => {
   const r = reapplyAllMods();
@@ -175,15 +144,11 @@ ipcMain.handle('reapply-all', () => {
   return r;
 });
 
-// -- IPC: Folders ------------------------------------------------------------
-
 ipcMain.handle('open-preset-folder', (_e, type) => {
   if (DIRS[type]) shell.openPath(DIRS[type]);
 });
 
-// -- IPC: Packs --------------------------------------------------------------
-
-ipcMain.handle('export-pack', (_e, data) => exportPack(data.type, data.name, mainWindow));
+ipcMain.handle('export-pack', (_e, data) => exportPack(data.type, data.presetName, mainWindow));
 ipcMain.handle('import-pack', () => importPack(mainWindow));
 ipcMain.handle('create-pack-from-active', async () => {
   const config = loadConfig();
@@ -195,8 +160,6 @@ ipcMain.handle('create-pack-from-active', async () => {
   return { success: false, reason: 'No active preset to export' };
 });
 
-// -- IPC: Theme --------------------------------------------------------------
-
 ipcMain.handle('set-theme', (_e, theme) => {
   const config = loadConfig();
   config.theme = theme;
@@ -204,8 +167,6 @@ ipcMain.handle('set-theme', (_e, theme) => {
   send('theme-changed', theme);
   return { success: true };
 });
-
-// -- IPC: Auto-start ---------------------------------------------------------
 
 ipcMain.handle('get-autostart', () => {
   try { return app.getLoginItemSettings().openAtLogin; } catch (err) { console.error('Failed to get autostart:', err.message); return false; }
@@ -216,15 +177,11 @@ ipcMain.handle('set-autostart', (_e, enabled) => {
   return { success: true };
 });
 
-// -- IPC: Window controls ----------------------------------------------------
-
 ipcMain.handle('window-minimize', () => mainWindow?.minimize());
 ipcMain.handle('window-maximize', () => {
   if (mainWindow?.isMaximized()) mainWindow.unmaximize(); else mainWindow?.maximize();
 });
 ipcMain.handle('window-close', () => { mainWindow?.close(); });
-
-// -- App lifecycle -----------------------------------------------------------
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -241,7 +198,6 @@ if (!gotTheLock) {
 
 app.whenReady().then(async () => {
   ensureDirs();
-  syncBundledPresets();
   createWindow();
   createTray(mainWindow, app);
 
@@ -249,7 +205,7 @@ app.whenReady().then(async () => {
   if (!config.startMinimized) mainWindow.show();
 
   if (config.watcherEnabled) {
-    startWatcher(config.watcherInterval, mainWindow);
+    startWatcher(config.watcherInterval);
   }
 
   app.on('activate', () => { if (mainWindow) mainWindow.show(); });

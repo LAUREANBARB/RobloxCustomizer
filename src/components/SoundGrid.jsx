@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import useStore from '../store';
+import usePresetGrid from '../hooks/usePresetGrid';
+import { Check, Export, XMark, Spinner, Folder, Import, PlayIcon } from './icons';
 
-function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDelete, isOwner }) {
+function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDelete, isOwner, volume }) {
   const { previewCache, setPreview, playingSound, setPlayingSound } = useStore();
   const [loading, setLoading] = useState(false);
   const audioRef = useRef(null);
@@ -32,11 +34,12 @@ function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDele
     }
     if (!previewCache[key]) {
       const data = await window.api.getSoundPreview(preset.name, fileName, preset.source);
-      if (data) setPreview(key, data); else return;
+      if (data) setPreview(key, data);
+      else return;
     }
     try {
       const audio = new Audio(previewCache[key]);
-      audio.volume = 0.5;
+      audio.volume = (volume ?? 50) / 100;
       audioRef.current = audio;
       setPlayingSound(key);
       await audio.play();
@@ -49,18 +52,23 @@ function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDele
         audioRef.current = null;
       };
     } catch {
+      console.error('Audio playback failed');
       setPlayingSound(null);
       audioRef.current = null;
     }
   };
 
+  const SoundBars = () => (
+    <div className="flex items-end gap-[1.5px] h-3">
+      {[1, 0.6, 0.8].map((h, i) => <div key={i} className="w-[1.5px] rounded-full bg-accent" style={{ height: `${h * 12}px` }} />)}
+    </div>
+  );
+
   return (
     <div className={`card p-5 group relative ${isActive ? 'card-active' : ''}`}>
       {isActive && (
         <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-accent flex items-center justify-center z-10">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <Check className="text-white" />
         </div>
       )}
       <div className="flex items-center gap-3 mb-4">
@@ -82,13 +90,7 @@ function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDele
             <div key={file} className="flex items-center gap-2">
               <button onClick={(e) => handlePlay(file, e)}
                 className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${isPlaying ? 'bg-accent/20 text-accent' : 'bg-white/[0.03] text-surface-500 hover:text-accent hover:bg-accent/5'}`}>
-                {isPlaying ? (
-                  <div className="flex items-end gap-[1.5px] h-3">
-                    {[1, 0.6, 0.8].map((h, i) => <div key={i} className="w-[1.5px] rounded-full bg-accent" style={{ height: `${h * 12}px` }} />)}
-                  </div>
-                ) : (
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polygon points="3,1 9,5 3,9" fill="currentColor"/></svg>
-                )}
+                {isPlaying ? <SoundBars /> : <PlayIcon />}
               </button>
               <span className="text-xs text-surface-400 truncate flex-1">{file}</span>
             </div>
@@ -104,24 +106,18 @@ function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDele
       <div className="absolute top-3 left-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
         <button onClick={(e) => { e.stopPropagation(); onExport(preset.name); }}
           className="w-6 h-6 rounded-lg bg-black/60 flex items-center justify-center hover:bg-accent/30" title="Export">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="text-surface-300">
-            <path d="M5 1V7M3 5L5 7L7 5M2 9H8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <Export className="text-surface-300" />
         </button>
         {!isOwner && (
           <button onClick={(e) => { e.stopPropagation(); onDelete(preset.name); }}
             className="w-6 h-6 rounded-lg bg-black/60 flex items-center justify-center hover:bg-danger/30" title="Delete">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="text-surface-400 hover:text-danger">
-              <path d="M2 2L8 8M8 2L2 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-            </svg>
+            <XMark className="text-surface-400 hover:text-danger" />
           </button>
         )}
       </div>
       {loading && (
         <div className="absolute inset-0 rounded-2xl bg-black/40 flex items-center justify-center z-20">
-          <svg className="animate-spin w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="32" strokeLinecap="round"/>
-          </svg>
+          <Spinner size={24} className="text-accent" />
         </div>
       )}
     </div>
@@ -129,59 +125,11 @@ function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDele
 }
 
 export default function SoundGrid() {
-  const { soundPresets, config, setSoundPresets, setConfig, addNotification } = useStore();
-  const [search, setSearch] = useState('');
-
-  const filteredPresets = soundPresets.filter(preset =>
-    preset.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const loadAll = async () => {
-    try { const s = await window.api.getSoundPresets(); setSoundPresets(s); } catch { addNotification('Failed to load presets', 'error'); }
-  };
-
-  useEffect(() => { loadPresets(); }, []);
-
-  const handleApply = async (name) => {
-    try {
-      const result = await window.api.applySoundPreset(name);
-      if (result.success) { const cfg = await window.api.getConfig(); setConfig(cfg); addNotification(`Sound "${name}" applied`, 'success'); }
-      else addNotification(result.reason || 'Failed', 'error');
-    } catch { addNotification('Apply failed', 'error'); }
-  };
-
-  const handleRemove = async () => {
-    try {
-      await window.api.removeSoundPreset();
-      const cfg = await window.api.getConfig();
-      setConfig(cfg);
-      addNotification('Sound reset to default', 'info');
-    } catch { addNotification('Failed', 'error'); }
-  };
-
-  const handleExport = async (name) => {
-    try {
-      const result = await window.api.exportPack({ type: 'sounds', presetName: name });
-      if (result.success) addNotification(`Exported "${name}"`, 'success');
-      else if (result.reason !== 'Cancelled') addNotification(result.reason || 'Export failed', 'error');
-    } catch { addNotification('Export failed', 'error'); }
-  };
-
-  const handleImport = async () => {
-    try {
-      const result = await window.api.importPack();
-      if (result.success) { loadPresets(); addNotification(`Imported: ${result.name}`, 'success'); }
-      else addNotification('No packs imported', 'info');
-    } catch { addNotification('Import failed', 'error'); }
-  };
-
-  const handleDelete = async (name) => {
-    try { await window.api.deleteSoundPreset(name); loadPresets(); const cfg = await window.api.getConfig(); setConfig(cfg); addNotification(`Deleted "${name}"`, 'info'); }
-    catch { addNotification('Delete failed', 'error'); }
-  };
-
-  const handleOpenFolder = () => window.api.openPresetFolder('sounds');
-  const isActive = (name) => config.activeSoundPreset === name;
+  const {
+    presets, config, search, setSearch, filteredPresets,
+    handleApply, handleRemove, handleExport, handleImport, handleDelete,
+    handleOpenFolder, isActive,
+  } = usePresetGrid('sounds');
 
   return (
     <div className="fade-in">
@@ -192,26 +140,15 @@ export default function SoundGrid() {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={handleImport} className="btn text-sm">
-            <span className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 2V9M4 7L7 10L10 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 12H12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-              </svg>
-              Import Pack
-            </span>
+            <span className="flex items-center gap-2"><Import />Import Pack</span>
           </button>
           <button onClick={handleOpenFolder} className="btn text-sm">
-            <span className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 4H5.5L7 5.5H12V12H2V4Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" fill="none"/>
-              </svg>
-              Open Folder
-            </span>
+            <span className="flex items-center gap-2"><Folder />Open Folder</span>
           </button>
         </div>
       </div>
 
-      {soundPresets.length === 0 ? (
+      {presets.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center mb-5">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-surface-500">
@@ -252,6 +189,7 @@ export default function SoundGrid() {
                     onExport={handleExport}
                     onDelete={handleDelete}
                     isOwner={preset.source === 'owner'}
+                    volume={config.previewVolume}
                   />
                 </div>
               ))}
