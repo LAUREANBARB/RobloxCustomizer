@@ -4,7 +4,7 @@ keep your cursors, sounds, textures, fonts in one place and easily apply them to
 
 # Features
 
-- Cursors, sounds, fonts, skyboxes, materials — each with presets
+- Cursors, sounds, fonts, skyboxes, materials each with presets
 - Profiles to save and switch between complete setups
 - Auto-apply watcher: detects Roblox version changes and reapplies mods
 - Import/export preset packs
