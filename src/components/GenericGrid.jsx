@@ -3,57 +3,6 @@ import useStore from '../store';
 import { Check, Export, XMark, Spinner, Folder } from './icons';
 
 const CONFIG = {
-  shiftlock: {
-    type: 'shiftlock',
-    apiLabel: 'Shiftlock',
-    label: 'Shiftlock',
-    desc: 'Replace the shiftlock cursor icon',
-    storeList: 'shiftlockPresets',
-    setList: 'setShiftlockPresets',
-    activeKey: 'activeShiftlockPreset',
-    emptyText: 'No presets available',
-    emptyHint: 'Add cursor PNGs to the cursors folder — shiftlock uses the same preset pool.',
-    apiFn: (name) => window.api.applyShiftlockPreset(name),
-    removeFn: () => window.api.removeShiftlockPreset(),
-    exportFn: (name) => window.api.exportPack({ type: 'shiftlock', presetName: name }),
-    deleteFn: (name) => window.api.deleteShiftlockPreset(name),
-    folderType: 'shiftlock',
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <rect x="8" y="14" width="16" height="14" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
-        <circle cx="16" cy="10" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-        <line x1="16" y1="10" x2="16" y2="14" stroke="currentColor" strokeWidth="2"/>
-      </svg>
-    ),
-    cardIcon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <rect x="6" y="11" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-        <circle cx="12" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-      </svg>
-    ),
-  },
-  fonts: {
-    type: 'fonts',
-    apiLabel: 'Font',
-    label: 'Fonts',
-    desc: "Replace Roblox's in-game fonts",
-    storeList: 'fontPresets',
-    setList: 'setFontPresets',
-    activeKey: 'activeFontPreset',
-    emptyText: 'No font presets',
-    emptyHint: 'Add .ttf font files to the font-presets folder.',
-    apiFn: (name) => window.api.applyFontPreset(name),
-    removeFn: () => window.api.removeFontPreset(),
-    exportFn: (name) => window.api.exportPack({ type: 'fonts', presetName: name }),
-    deleteFn: (name) => window.api.deleteFontPreset(name),
-    folderType: 'fonts',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <path d="M4 7H24M14 7V24M9 24H19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-    cardIcon: <span className="text-2xl font-bold" style={{ fontFamily: 'serif' }}>Aa</span>,
-  },
   skyboxes: {
     type: 'skyboxes',
     apiLabel: 'Skybox',

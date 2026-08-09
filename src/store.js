@@ -17,6 +17,8 @@ const useStore = create((set) => ({
     startMinimized: false,
     previewVolume: 50,
     watcherInterval: 2,
+    forceSize: 0,
+    forceShiftlockSize: 0,
   },
   setConfig: (config) => set({ config }),
 

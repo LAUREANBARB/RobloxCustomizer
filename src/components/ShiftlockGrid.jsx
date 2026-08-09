@@ -2,6 +2,7 @@ import React from 'react';
 import usePresetGrid from '../hooks/usePresetGrid';
 import { Folder, Import } from './icons';
 import CursorPreviewCard from './CursorPreviewCard';
+import ForceSizeControl from './ForceSizeControl';
 
 export default function ShiftlockGrid() {
   const {
@@ -18,6 +19,7 @@ export default function ShiftlockGrid() {
           <p className="text-sm text-surface-500 mt-0.5">Shiftlock cursor presets. Click to apply.</p>
         </div>
         <div className="flex items-center gap-2">
+          <ForceSizeControl overrideKey="forceShiftlockSize" />
           {config.activeShiftlockPreset && <button onClick={handleRemove} className="btn btn-danger text-sm">Reset</button>}
           <button onClick={handleImport} className="btn text-sm">
             <span className="flex items-center gap-2"><Import />Import Pack</span>

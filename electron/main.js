@@ -119,6 +119,7 @@ PRESET_TYPES.forEach((type) => {
 
 ipcMain.handle('get-cursor-preview', (_e, preset, file, source) => getPreviewData('cursors', preset, file, source));
 ipcMain.handle('get-sound-preview', (_e, preset, file, source) => getPreviewData('sounds', preset, file, source));
+ipcMain.handle('get-font-preview', (_e, preset, file, source) => getPreviewData('fonts', preset, file, source));
 
 ipcMain.handle('get-categorized-presets', () => getCategorizedPresets());
 
@@ -138,8 +139,8 @@ ipcMain.handle('toggle-watcher', (_e, enabled) => {
   return { success: true, watcherEnabled: enabled };
 });
 
-ipcMain.handle('reapply-all', () => {
-  const r = reapplyAllMods();
+ipcMain.handle('reapply-all', async () => {
+  const r = await reapplyAllMods();
   send('mods-reapplied', r);
   rebuildMenu();
   return r;

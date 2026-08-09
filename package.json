@@ -1,6 +1,6 @@
 {
   "name": "roblox-customizer",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Roblox cursor & sound swapper with update-proof auto-apply",
   "main": "electron/main.js",
   "scripts": {
@@ -34,6 +34,7 @@
     "adm-zip": "^0.6.0",
     "archiver": "^7.0.1",
     "extract-zip": "^2.0.1",
+    "pngjs": "^7.0.0",
     "zustand": "^4.5.0"
   },
   "devDependencies": {

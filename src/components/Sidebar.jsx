@@ -6,13 +6,13 @@ export default function Sidebar() {
   const { activeTab, setActiveTab, config, cursorPresets, soundPresets } = useStore();
 
   const tabs = [
+    { id: 'profiles', label: 'Profiles', count: null, icon: <ProfileIcon /> },
     { id: 'cursors', label: 'Cursors', count: (cursorPresets ?? []).length, icon: <CursorIcon /> },
     { id: 'shiftlock', label: 'Shiftlock', count: null, icon: <CursorIcon /> },
     { id: 'sounds', label: 'Sounds', count: (soundPresets ?? []).length, icon: <SoundIcon /> },
     { id: 'fonts', label: 'Fonts', count: null, icon: <FontIcon /> },
     { id: 'skyboxes', label: 'Skybox', count: null, icon: <SkyboxIcon /> },
     { id: 'materials', label: 'Materials', count: null, icon: <MaterialIcon /> },
-    { id: 'profiles', label: 'Profiles', count: null, icon: <ProfileIcon /> },
   ];
 
   const activeCount = (config.activeCursorPreset ? 1 : 0)
@@ -59,8 +59,6 @@ export default function Sidebar() {
 
       <div className="px-4 mt-auto pt-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
         <div className="flex items-center gap-2 text-[10px]" style={{ color: 'var(--text-dim)' }}>
-          <div className={`w-1.5 h-1.5 rounded-full ${config.watcherEnabled ? 'bg-[var(--success)] animate-pulse' : 'bg-[var(--text-dim)]'}`} />
-          <span>Watcher {config.watcherEnabled ? 'Active' : 'Off'}</span>
           {activeCount > 0 && <span className="ml-auto" style={{ color: 'var(--accent)' }}>{activeCount} active</span>}
         </div>
       </div>

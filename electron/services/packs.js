@@ -96,7 +96,7 @@ async function restoreConfig(win) {
   try {
     const data = JSON.parse(fs.readFileSync(result.filePaths[0], 'utf-8'));
     saveConfig(data);
-    reapplyAllMods();
+    await reapplyAllMods();
     return { success: true };
   } catch (err) {
     return { success: false, reason: err.message };

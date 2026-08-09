@@ -7,12 +7,12 @@ let watcher = null;
 function startWatcher(intervalSec) {
   stopWatcher();
   const intervalMs = (intervalSec || 2) * 1000;
-  const check = () => {
+  const check = async () => {
     const config = loadConfig();
     if (!config.watcherEnabled) return;
     const version = getLatestRobloxVersion();
     if (!version) return;
-    reapplyAllMods(version);
+    await reapplyAllMods(version);
   };
   watcher = setInterval(check, intervalMs);
 }

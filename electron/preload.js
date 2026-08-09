@@ -22,6 +22,7 @@ function presetApi({ api, channel }) {
 const previewApi = {
   getCursorPreview: (preset, file, source) => ipcRenderer.invoke('get-cursor-preview', preset, file, source),
   getSoundPreview: (preset, file, source) => ipcRenderer.invoke('get-sound-preview', preset, file, source),
+  getFontPreview: (preset, file, source) => ipcRenderer.invoke('get-font-preview', preset, file, source),
 };
 
 const presetApis = PRESET_TYPES.reduce((acc, type) => ({ ...acc, ...presetApi(type) }), previewApi);

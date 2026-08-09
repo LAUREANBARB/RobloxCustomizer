@@ -40,6 +40,7 @@ const DEFAULT_CONFIG = {
   activeSkyboxPreset: null, activeMaterialPreset: null, activeProfile: null,
   watcherEnabled: false, theme: '',
   startMinimized: false, previewVolume: 50, watcherInterval: 2,
+  forceSize: 0, forceShiftlockSize: 0,
 };
 
 function cap(s) {
