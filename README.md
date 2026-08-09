@@ -17,6 +17,10 @@ keep your cursors, sounds, textures, fonts in one place and easily apply them to
 - Tailwind CSS
 - zustand
 # Building from Source
+
+> [!IMPORTANT]
+> node.js must be installed to build it from source </strong>
+
 *Run normally*
 ``npm start``
 
