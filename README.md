@@ -8,23 +8,44 @@ keep your cursors, sounds, textures, fonts in one place and easily apply them to
 - Profiles to save and switch between complete setups
 - Auto-apply watcher: detects Roblox version changes and reapplies mods
 - Import/export preset packs
-- Bundled cursor and sound presets in `custom-assets/`
+- Bundled Assets and sound presets in `custom-assets/`
 
-# Stack
+# Tech Stack
+- Electron
+- React
+- Vite
+- Tailwind CSS
+- zustand
+# Building from Source
+*Run normally*
+``npm start``
 
-Electron, React, Vite, Tailwind CSS, zustand
+Builds the application and launches it.
 
-output in `release/`.
+If you encounter dependency errors, run:
 
-# For building from source
+``npm install``
+*Development mode*
+``npm run dev``
 
-How to run?:
+Starts the application in development mode with hot reload.
 
-- npm start        # build + launch (if you get errors run *npm install*)
-- npm run dev      # dev mode with hot reload
+## Build without launching
 
-How to build without running?:
+*Windows:*
 
-- npm run dist         # Windows
-- npm run dist:linux   # Linux
-- npm run dist:all     # Windows + Linux
+``npm run dist``
+
+*Linux:*
+
+``npm run dist:linux``
+
+*Windows + Linux:*
+
+``npm run dist:all``
+
+Built files are placed in the release/ directory.
+
+# Credits
+
+All assets are made by other people and not by me. Credits to the rightful owners as i do not own any of their work i just use it and distribute it as they are already public.
