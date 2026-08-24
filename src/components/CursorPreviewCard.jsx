@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import useStore from '../store';
-import { Check, Export, XMark, Spinner } from './icons';
+import { Check, Export, XMark, Spinner, StarIcon } from './icons';
 
 export default function CursorPreviewCard({ preset, isActive, onApply, onExport, onDelete, isOwner, previewType }) {
-  const { previewCache, setPreview } = useStore();
+  const { previewCache, setPreview, config, setConfig } = useStore();
   const [loading, setLoading] = useState(false);
 
   const thumbKey = `${preset.source}/${preset.name}/ArrowCursor.png`;
   const fallbackKey = `${preset.source}/${preset.name}/${preset.files[0]}`;
+
+  const favType = previewType === 'shiftlock' ? 'shiftlock' : 'cursors';
+  const isFav = !!(config.favorites && config.favorites[favType] && config.favorites[favType].includes(preset.name));
+
+  const handleToggleFavorite = async (e) => {
+    e.stopPropagation();
+    await window.api.toggleFavorite(favType, preset.name);
+    const cfg = await window.api.getConfig();
+    setConfig(cfg);
+  };
 
   useEffect(() => {
     const cache = useStore.getState().previewCache;
@@ -59,6 +69,10 @@ export default function CursorPreviewCard({ preset, isActive, onApply, onExport,
       </div>
 
       <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <button onClick={handleToggleFavorite}
+          className="w-6 h-6 rounded-lg bg-black/60 flex items-center justify-center hover:bg-yellow-500/30" title={isFav ? 'Unfavorite' : 'Favorite'}>
+          <StarIcon size={10} filled={isFav} className={isFav ? 'text-yellow-400' : 'text-surface-300'} />
+        </button>
         <button onClick={(e) => { e.stopPropagation(); onExport(preset.name); }}
           className="w-6 h-6 rounded-lg bg-black/60 flex items-center justify-center hover:bg-accent/30" title="Export">
           <Export className="text-surface-300" />

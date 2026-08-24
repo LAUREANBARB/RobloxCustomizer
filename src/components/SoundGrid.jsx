@@ -1,12 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import useStore from '../store';
 import usePresetGrid from '../hooks/usePresetGrid';
-import { Check, Export, XMark, Spinner, Folder, Import, PlayIcon } from './icons';
+import { Check, Export, XMark, Spinner, Folder, Import, PlayIcon, StarIcon } from './icons';
 
 function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDelete, isOwner, volume }) {
-  const { previewCache, setPreview, playingSound, setPlayingSound } = useStore();
+  const { previewCache, setPreview, playingSound, setPlayingSound, config, setConfig } = useStore();
   const [loading, setLoading] = useState(false);
   const audioRef = useRef(null);
+
+  const isFav = !!(config.favorites && config.favorites.sounds && config.favorites.sounds.includes(preset.name));
+
+  const handleToggleFavorite = async (e) => {
+    e.stopPropagation();
+    await window.api.toggleFavorite('sounds', preset.name);
+    const cfg = await window.api.getConfig();
+    setConfig(cfg);
+  };
 
   useEffect(() => {
     return () => {
@@ -104,6 +113,10 @@ function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDele
         {isActive && <button onClick={onRemove} className="btn btn-danger text-xs py-2 px-3">Remove</button>}
       </div>
       <div className="absolute top-3 left-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <button onClick={handleToggleFavorite}
+          className="w-6 h-6 rounded-lg bg-black/60 flex items-center justify-center hover:bg-yellow-500/30" title={isFav ? 'Unfavorite' : 'Favorite'}>
+          <StarIcon size={10} filled={isFav} className={isFav ? 'text-yellow-400' : 'text-surface-300'} />
+        </button>
         <button onClick={(e) => { e.stopPropagation(); onExport(preset.name); }}
           className="w-6 h-6 rounded-lg bg-black/60 flex items-center justify-center hover:bg-accent/30" title="Export">
           <Export className="text-surface-300" />
@@ -146,6 +159,10 @@ export default function SoundGrid() {
             <span className="flex items-center gap-2"><Folder />Open Folder</span>
           </button>
         </div>
+      </div>
+
+      <div className="mb-5 px-4 py-3 rounded-xl border text-sm" style={{ borderColor: 'var(--warning-border, rgba(251,191,36,0.25))', background: 'var(--warning-bg, rgba(251,191,36,0.06))', color: 'var(--text-secondary, #d4a853)' }}>
+        <span className="font-semibold">Note:</span> You may need to click the play button twice for audio to start. This will be fixed in a future update.
       </div>
 
       {presets.length === 0 ? (

@@ -19,6 +19,8 @@ const useStore = create((set) => ({
     watcherInterval: 2,
     forceSize: 0,
     forceShiftlockSize: 0,
+    animationsEnabled: true,
+    favorites: {},
   },
   setConfig: (config) => set({ config }),
 

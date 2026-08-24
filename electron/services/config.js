@@ -41,6 +41,8 @@ const DEFAULT_CONFIG = {
   watcherEnabled: false, theme: '',
   startMinimized: false, previewVolume: 50, watcherInterval: 2,
   forceSize: 0, forceShiftlockSize: 0,
+  animationsEnabled: true,
+  favorites: {},
 };
 
 function cap(s) {

@@ -70,6 +70,10 @@ contextBridge.exposeInMainWorld('api', {
   getAutostart: () => ipcRenderer.invoke('get-autostart'),
   setAutostart: (enabled) => ipcRenderer.invoke('set-autostart', enabled),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  openRobloxFolder: () => ipcRenderer.invoke('open-roblox-folder'),
+  toggleFavorite: (type, name) => ipcRenderer.invoke('toggle-favorite', { type, name }),
+  getFavorites: () => ipcRenderer.invoke('get-favorites'),
+  isFavorite: (type, name) => ipcRenderer.invoke('is-favorite', { type, name }),
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   downloadAndInstall: (info) => ipcRenderer.invoke('download-and-install', info),
 

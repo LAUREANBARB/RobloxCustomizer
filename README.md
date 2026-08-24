@@ -1,6 +1,9 @@
 # Roblox Customizer
 
-keep your cursors, sounds, textures, fonts in one place and easily apply them to new versions / automatically apply seamlessly (at least trying to lmao)
+Compatible with Windows and Linux.
+Keep your cursors, sounds, textures, fonts in one place and easily apply them to new versions / automatically apply seamlessly (at least trying to lmao)
+> [!NOTE]
+> On Linux this app currently supports Sober via Flatpak.
 
 # Features
 

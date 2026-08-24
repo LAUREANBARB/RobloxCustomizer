@@ -168,7 +168,7 @@ export default function Settings() {
           <div className="settings-label">Startup</div>
           <div className="settings-row">
             <div>
-              <div className="settings-row-label">Start with Windows</div>
+              <div className="settings-row-label">Start with System</div>
               <div className="settings-row-desc">Launch on system boot. Note: for Linux users this assumes you have systemd</div>
             </div>
             <ToggleButton enabled={autostart} onToggle={handleAutostart} />
@@ -179,6 +179,17 @@ export default function Settings() {
               <div className="settings-row-desc">Go straight to system tray</div>
             </div>
             <ToggleButton enabled={localSettings.startMinimized} onToggle={(v) => updateSetting('startMinimized', v)} />
+          </div>
+        </div>
+
+        <div className="settings-section">
+          <div className="settings-label">Interface</div>
+          <div className="settings-row">
+            <div>
+              <div className="settings-row-label">Animations</div>
+              <div className="settings-row-desc">Enable UI animations and transitions</div>
+            </div>
+            <ToggleButton enabled={localSettings.animationsEnabled !== false} onToggle={(v) => updateSetting('animationsEnabled', v)} />
           </div>
         </div>
 
@@ -197,6 +208,7 @@ export default function Settings() {
             />
           </div>
         </div>
+
       </div>
     </div>
   );

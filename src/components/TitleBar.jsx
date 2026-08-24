@@ -1,10 +1,7 @@
 import React from 'react';
-import useStore from '../store';
 import { AppIcon } from './icons';
 
 export default function TitleBar() {
-  const { setSettingsOpen } = useStore();
-
   return (
     <div className="h-10 flex items-center justify-between px-4 glass border-b select-none"
          style={{ borderColor: 'var(--border-subtle)', WebkitAppRegion: 'drag' }}>
@@ -15,15 +12,6 @@ export default function TitleBar() {
         <span className="text-xs font-semibold tracking-wide" style={{ color: 'var(--text-primary)' }}>
           ROBLOX CUSTOMIZER
         </span>
-
-        <button
-          onClick={() => setSettingsOpen(true)}
-          className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
-          style={{ WebkitAppRegion: 'no-drag' }}
-          title="Settings"
-        >
-          <img src="gear.png" alt="Settings" className="w-4 h-4 opacity-50 hover:opacity-100 transition-opacity" />
-        </button>
       </div>
 
       <div className="flex items-center gap-1" style={{ WebkitAppRegion: 'no-drag' }}>

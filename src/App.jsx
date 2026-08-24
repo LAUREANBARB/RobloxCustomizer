@@ -9,6 +9,7 @@ import SoundGrid from './components/SoundGrid';
 import FontGrid from './components/FontGrid';
 import SkyboxGrid from './components/SkyboxGrid';
 import MaterialGrid from './components/MaterialGrid';
+import FavoritesGrid from './components/FavoritesGrid';
 import ProfilesGrid from './components/ProfilesGrid';
 import StatusBar from './components/StatusBar';
 import Settings from './components/Settings';
@@ -19,6 +20,7 @@ import Notifications from './components/Notifications';
 export default function App() {
   const {
     activeTab,
+    config,
     setCursorPresets,
     setShiftlockPresets,
     setSoundPresets,
@@ -112,13 +114,14 @@ export default function App() {
   }, [loadData, addNotification, setRobloxRunning, setTheme]);
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+    <div className={`h-screen w-screen flex flex-col overflow-hidden ${config.animationsEnabled === false ? 'no-animations' : ''}`} style={{ background: 'var(--bg-primary)' }}>
       <TitleBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
         <main className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6">
             <div key={activeTab} className="tab-enter">
+              {activeTab === 'favorites' && <FavoritesGrid />}
               {activeTab === 'cursors' && <CursorGrid />}
               {activeTab === 'shiftlock' && <ShiftlockGrid />}
               {activeTab === 'sounds' && <SoundGrid />}

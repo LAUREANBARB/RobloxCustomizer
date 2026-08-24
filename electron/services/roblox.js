@@ -158,9 +158,18 @@ function cleanOldVersions() {
   return { success: true, removed: old.length };
 }
 
+function getClientSettingsDir(versionDir) {
+  if (IS_LINUX && isSoberRoblox()) {
+    return path.join(process.env.HOME, '.var', 'app', 'org.vinegarhq.Sober', 'data', 'sober', 'asset_overlay', 'ClientSettings');
+  }
+  const base = getRobloxBase();
+  if (!base || !versionDir) return null;
+  return path.join(base, versionDir, 'ClientSettings');
+}
+
 module.exports = {
   getRobloxBase, getRobloxOverlayDir, isSoberRoblox,
   getLatestRobloxVersion, getOldRobloxVersions,
   isRobloxRunning, killRobloxProcess, launchRoblox,
-  cleanOldVersions,
+  cleanOldVersions, getClientSettingsDir,
 };

@@ -1,6 +1,6 @@
 {
   "name": "roblox-customizer",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "Roblox cursor & sound swapper with update-proof auto-apply",
   "main": "electron/main.js",
   "scripts": {
@@ -42,7 +42,7 @@
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.0",
     "concurrently": "^8.2.0",
-    "electron": "^32.0.0",
+    "electron": "^32.3.3",
     "electron-packager": "^17.1.2",
     "eslint": "^9.39.5",
     "eslint-plugin-react": "^7.37.5",

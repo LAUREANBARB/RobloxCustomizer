@@ -89,6 +89,10 @@ export default function FontGrid() {
         </div>
       </div>
 
+      <div className="mb-5 px-4 py-3 rounded-xl border text-sm" style={{ borderColor: 'var(--warning-border, rgba(251,191,36,0.25))', background: 'var(--warning-bg, rgba(251,191,36,0.06))', color: 'var(--text-secondary, #d4a853)' }}>
+        <span className="font-semibold">Note:</span> Most in-game UI and chat fonts will change, but not all are guaranteed. Fonts loaded from the cloud by games at runtime cannot be overridden locally.
+      </div>
+
       {presets.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center mb-5">

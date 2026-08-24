@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import useStore from '../store';
-import { Check, Export, XMark, Spinner, Folder } from './icons';
+import { Check, Export, XMark, Spinner, Folder, StarIcon } from './icons';
 
 const CONFIG = {
   skyboxes: {
@@ -69,7 +69,9 @@ const CONFIG = {
   },
 };
 
-function GenericCard({ preset, isActive, cfg, onApply, onExport, onDelete, loading }) {
+function GenericCard({ preset, isActive, cfg, onApply, onExport, onDelete, loading, favorites, onToggleFavorite }) {
+  const isFav = favorites.includes(preset.name);
+
   return (
     <div
       className={`card-stagger card p-4 cursor-pointer group relative ${isActive ? 'card-active' : ''}`}
@@ -86,6 +88,10 @@ function GenericCard({ preset, isActive, cfg, onApply, onExport, onDelete, loadi
       <p className="text-sm font-medium truncate mb-1" style={{ color: 'var(--text-primary)' }}>{preset.name}</p>
       <p className="text-[10px]" style={{ color: 'var(--text-dim)' }}>{preset.files.length} texture files</p>
       <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <button onClick={(e) => { e.stopPropagation(); onToggleFavorite(preset.name); }}
+          className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-yellow-500/30" style={{ background: 'rgba(0,0,0,0.6)' }} title={isFav ? 'Unfavorite' : 'Favorite'}>
+          <StarIcon size={10} filled={isFav} className={isFav ? 'text-yellow-400' : 'text-surface-300'} />
+        </button>
         <button onClick={(e) => { e.stopPropagation(); onExport(preset.name); }}
           className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-accent/30" style={{ background: 'rgba(0,0,0,0.6)' }} title="Export">
           <Export size={10} />
@@ -118,6 +124,14 @@ export default function GenericGrid({ presetType }) {
   const filteredPresets = (presets ?? []).filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const favorites = (config.favorites && config.favorites[cfg.type]) || [];
+
+  const handleToggleFavorite = async (name) => {
+    await window.api.toggleFavorite(cfg.type, name);
+    const c = await window.api.getConfig();
+    setConfig(c);
+  };
 
   const loadPresets = useCallback(async () => {
     try { const p = await window.api[`get${cfg.apiLabel}Presets`](); setPresets(p); } catch { addNotification('Failed to load presets', 'error'); }
@@ -205,6 +219,8 @@ export default function GenericGrid({ presetType }) {
                     onExport={handleExport}
                     onDelete={handleDelete}
                     loading={loading}
+                    favorites={favorites}
+                    onToggleFavorite={handleToggleFavorite}
                   />
                 </div>
               ))}

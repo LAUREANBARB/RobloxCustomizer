@@ -3,6 +3,71 @@ const fs = require('fs');
 const { DIRS, CURSOR_SUBPATH, SHIFTLOCK_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH, APP_DATA, loadConfig, saveConfig, IS_LINUX, cap } = require('./config');
 const { getRobloxBase, getRobloxOverlayDir, getLatestRobloxVersion } = require('./roblox');
 
+const KNOWN_ROBLOX_FONTS = [
+  'AccanthisADFStd-Regular.otf',
+  'AmaticSC-Bold.ttf',
+  'AmaticSC-Regular.ttf',
+  'arial.ttf',
+  'arialbd.ttf',
+  'Balthazar-Regular.ttf',
+  'Bangers-Regular.ttf',
+  'ComicNeue-Angular-Bold.ttf',
+  'Creepster-Regular.ttf',
+  'DenkOne-Regular.ttf',
+  'Fondamento-Italic.ttf',
+  'Fondamento-Regular.ttf',
+  'FredokaOne-Regular.ttf',
+  'GothamSSm-Black.otf',
+  'GothamSSm-Bold.otf',
+  'GothamSSm-Book.otf',
+  'GothamSSm-Medium.otf',
+  'GrenzeGotisch-Bold.ttf',
+  'GrenzeGotisch-Regular.ttf',
+  'Guru-Regular.otf',
+  'HWYGOTH.ttf',
+  'Inconsolata-Regular.ttf',
+  'IndieFlower-Regular.ttf',
+  'JosefinSans-Regular.ttf',
+  'Jura-Regular.ttf',
+  'Kalam-Regular.ttf',
+  'LuckiestGuy-Regular.ttf',
+  'Merriweather-Italic.ttf',
+  'Merriweather-Regular.ttf',
+  'Michroma-Regular.ttf',
+  'NotoSansBengaliUI-Regular.ttf',
+  'NotoSansDevanagariUI-Regular.ttf',
+  'NotoSansGeorgian-Regular.ttf',
+  'NotoSansKhmerUI-Regular.ttf',
+  'NotoSansMyanmarUI-Regular.ttf',
+  'NotoSansSinhalaUI-Regular.ttf',
+  'NotoSansThaiUI-Regular.ttf',
+  'Nunito-Regular.ttf',
+  'Oswald-Bold.ttf',
+  'Oswald-Regular.ttf',
+  'PatrickHand-Regular.ttf',
+  'PermanentMarker-Regular.ttf',
+  'PressStart2P-Regular.ttf',
+  'Roboto-Bold.ttf',
+  'Roboto-Italic.ttf',
+  'Roboto-Regular.ttf',
+  'RobotoCondensed-Regular.ttf',
+  'RobotoMono-Regular.ttf',
+  'RomanAntique.otf',
+  'Sarpanch-Bold.ttf',
+  'Sarpanch-Regular.ttf',
+  'SourceSansPro-Bold.ttf',
+  'SourceSansPro-It.ttf',
+  'SourceSansPro-Light.ttf',
+  'SourceSansPro-Regular.ttf',
+  'SourceSansPro-Semibold.ttf',
+  'SpecialElite-Regular.ttf',
+  'TitilliumWeb-Bold.ttf',
+  'TitilliumWeb-Regular.ttf',
+  'Ubuntu-Italic.ttf',
+  'Ubuntu-Regular.ttf',
+  'zekton_rg.ttf',
+];
+
 const PRESET_TYPES = {
   cursors: {
     extensions: ['.png'],
@@ -26,7 +91,7 @@ const PRESET_TYPES = {
   },
   skyboxes: {
     extensions: ['.tex'],
-    overlaySubpath: path.join('content', 'sky'),
+    overlaySubpath: path.join('content', 'textures', 'sky'),
     robloxSubpath: SKYBOX_SUBPATH,
   },
   materials: {
@@ -143,6 +208,21 @@ async function applyPreset(type, presetName, versionDir, presetDir) {
     return true;
   }
 
+  if (type === 'fonts' && files.length > 0) {
+    const fontSrc = path.join(src, files[0]);
+    let existingFonts = fs.readdirSync(destDir).filter((f) => cfg.extensions.some((ext) => f.toLowerCase().endsWith(ext)));
+    if (existingFonts.length === 0) {
+      existingFonts = [...KNOWN_ROBLOX_FONTS];
+    }
+    const targetName = existingFonts[0];
+    for (const name of existingFonts) {
+      backupFile(destDir, name, type);
+      fs.copyFileSync(fontSrc, path.join(destDir, name));
+    }
+    rewriteFamilyJsons(destDir, targetName);
+    return true;
+  }
+
   for (const f of files) {
     backupFile(destDir, f, type);
     await writeImage(path.join(src, f), path.join(destDir, f), size);
@@ -165,7 +245,47 @@ function removeAppliedFiles(type, presetName) {
     return;
   }
 
+  if (type === 'fonts') {
+    const backupTypeDir = path.join(BACKUP_DIR, type);
+    if (fs.existsSync(backupTypeDir)) {
+      fs.readdirSync(backupTypeDir).filter((f) => cfg.extensions.some((ext) => f.toLowerCase().endsWith(ext))).forEach((f) => restoreFile(destDir, f, type));
+    }
+    restoreFamilyJsons(destDir);
+    return;
+  }
+
   files.forEach((f) => restoreFile(destDir, f, type));
+}
+
+const FONT_FAMILIES_DIR = 'families';
+
+function rewriteFamilyJsons(fontsDir, customFontFileName) {
+  const familiesDir = path.join(fontsDir, FONT_FAMILIES_DIR);
+  if (!fs.existsSync(familiesDir)) return;
+  const jsonFiles = fs.readdirSync(familiesDir).filter((f) => f.endsWith('.json'));
+  for (const jsonFile of jsonFiles) {
+    const jsonPath = path.join(familiesDir, jsonFile);
+    backupFile(familiesDir, jsonFile, 'fonts');
+    try {
+      const data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+      if (data.faces && Array.isArray(data.faces)) {
+        for (const face of data.faces) {
+          face.assetId = 'rbxasset://fonts/' + customFontFileName;
+        }
+        fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
+      }
+    } catch {}
+  }
+}
+
+function restoreFamilyJsons(fontsDir) {
+  const familiesDir = path.join(fontsDir, FONT_FAMILIES_DIR);
+  if (!fs.existsSync(familiesDir)) return;
+  const backupFamiliesDir = path.join(BACKUP_DIR, 'fonts', FONT_FAMILIES_DIR);
+  if (!fs.existsSync(backupFamiliesDir)) return;
+  for (const f of fs.readdirSync(backupFamiliesDir)) {
+    restoreFile(familiesDir, f, 'fonts');
+  }
 }
 
 async function reapplyAllMods(version) {

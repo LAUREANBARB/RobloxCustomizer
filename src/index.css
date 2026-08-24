@@ -386,3 +386,22 @@ input:focus {
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
+
+.no-animations *,
+.no-animations *::before,
+.no-animations *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+.no-animations .card:hover,
+.no-animations .btn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.no-animations .nav-item:hover {
+  transform: none !important;
+}

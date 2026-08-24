@@ -191,6 +191,34 @@ ipcMain.handle('check-for-updates', async () => {
 
 ipcMain.handle('open-external', (_e, url) => { shell.openExternal(url); });
 
+ipcMain.handle('open-roblox-folder', () => {
+  const { getRobloxBase } = require('./services/roblox');
+  const base = getRobloxBase();
+  if (base) shell.openPath(base);
+  return { success: !!base };
+});
+
+ipcMain.handle('toggle-favorite', (_e, { type, name }) => {
+  const config = loadConfig();
+  if (!config.favorites) config.favorites = {};
+  if (!config.favorites[type]) config.favorites[type] = [];
+  const idx = config.favorites[type].indexOf(name);
+  if (idx >= 0) config.favorites[type].splice(idx, 1);
+  else config.favorites[type].push(name);
+  handleConfigChange(config);
+  return { success: true, favorites: config.favorites };
+});
+
+ipcMain.handle('get-favorites', () => {
+  const config = loadConfig();
+  return config.favorites || {};
+});
+
+ipcMain.handle('is-favorite', (_e, { type, name }) => {
+  const config = loadConfig();
+  return !!(config.favorites && config.favorites[type] && config.favorites[type].includes(name));
+});
+
 ipcMain.handle('download-and-install', async (_e, updateInfo) => {
   try {
     await downloadAndInstall(updateInfo, mainWindow, (status) => {

@@ -88,6 +88,19 @@ export const ProfileIcon = ({ size = 18, className = '' }) => (
   </svg>
 );
 
+export const StarIcon = ({ size = 18, className = '', filled = false }) => (
+  <svg width={size} height={size} viewBox="0 0 18 18" fill={filled ? 'currentColor' : 'none'} className={className}>
+    <path d="M9 2L11.1 6.3L16 6.9L12.5 10.3L13.3 15.2L9 12.9L4.7 15.2L5.5 10.3L2 6.9L6.9 6.3L9 2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+  </svg>
+);
+
+export const FolderOpenIcon = ({ size = 18, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 18 18" fill="none" className={className}>
+    <path d="M2 5H6L7.5 3.5H14V14H2V5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" fill="none"/>
+    <path d="M2 5L4 10H16L14 5" stroke="currentColor" strokeWidth="1.3" fill="none"/>
+  </svg>
+);
+
 export const AppIcon = ({ size = 12, className = '' }) => (
   <svg width={size} height={size} viewBox="0 0 12 12" fill="none" className={className}>
     <path d="M2 2L6 1L10 2L11 6L10 10L6 11L2 10L1 6L2 2Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
