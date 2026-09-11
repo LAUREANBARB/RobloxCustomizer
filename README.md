@@ -1,58 +1,67 @@
 # Roblox Customizer
 
-Compatible with Windows and Linux.
-Keep your cursors, sounds, textures, fonts in one place and easily apply them to new versions / automatically apply seamlessly (at least trying to lmao)
-> [!NOTE]
-> On Linux this app currently supports Sober via Flatpak.
+> A desktop utility for managing and applying local Roblox cosmetic customizations.
 
-# Features
+> [!CAUTION]
+> **Use at your own risk.**
+>
+> Roblox Customizer only applies local cosmetic modifications such as cursors,
+> fonts, sounds, textures, skyboxes, and materials. It does not inject code,
+> modify the Roblox executable, manipulate memory, automate gameplay, or provide
+> gameplay advantages.
+>
+> Roblox may detect modified client files or third-party software and take
+> action on an account. I cannot guarantee that using this tool will never
+> result in account restrictions.
+>
+> By using this tool, you acknowledge that you are responsible for your own
+> use of it and any consequences that may result from doing so.
 
-- Cursors, sounds, fonts, skyboxes, materials each with presets
-- Profiles to save and switch between complete setups
-- Auto-apply watcher: detects Roblox version changes and reapplies mods
+## Features
+
+- Cursors, sounds, fonts, skyboxes, and materials
+- Presets for each asset type
+- Profiles for saving and switching between complete setups
+- Automatic reapplication when Roblox updates
 - Import/export preset packs
-- Bundled Assets and sound presets in `custom-assets/`
+- Bundled assets and sound presets
 
-# Tech Stack
+## Compatibility
+
+### Windows
+
+Supports the native Roblox client.
+
+Third-party bootstrapper clients such as Bloxstrap and Fishstrap are
+currently not supported.
+
+### Linux
+
+Currently supports Sober via Flatpak.
+
+## Asset Library
+
+Additional cursors, fonts, and other assets can be added manually to
+`custom-assets/`.
+
+More asset types are currently being added.
+
+## Tech Stack
+
 - Electron
 - React
 - Vite
 - Tailwind CSS
-- zustand
-# Building from Source
+- Zustand
 
-> [!IMPORTANT]
-> node.js must be installed to build it from source </strong>
+## Building from Source
 
-*Run normally*
-``npm start``
+### Requirements
 
-Builds the application and launches it.
+- Node.js
 
-If you encounter dependency errors, run:
+### Run
 
-``npm install``
-*Development mode*
-``npm run dev``
-
-Starts the application in development mode with hot reload.
-
-## Build without launching
-
-*Windows:*
-
-``npm run dist``
-
-*Linux:*
-
-``npm run dist:linux``
-
-*Windows + Linux:*
-
-``npm run dist:all``
-
-Built files are placed in the release/ directory.
-
-# Credits
-
-All assets are made by other people and not by me. Credits to the rightful owners as i do not own any of their work i just use it and distribute it as they are already public.
+```bash
+npm install
+npm start

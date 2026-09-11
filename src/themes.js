@@ -1,5 +1,18 @@
 const themes = [
   {
+    id: 'sublevel4', name: 'SubLevel-4', color: '#c8aa50', desc: 'Dark industrial gold',
+    vars: {
+      '--bg-primary': '#060609', '--bg-surface': '#0a0a0f', '--bg-surface-alt': '#0e0e15',
+      '--bg-glass': 'rgba(10, 10, 15, 0.9)', '--bg-card': '#0a0a0f',
+      '--border-subtle': 'rgba(42, 42, 56, 0.5)', '--border-accent': 'rgba(200, 170, 80, 0.3)',
+      '--text-primary': '#eaeaF0', '--text-secondary': '#9a9aa6', '--text-muted': '#60606c', '--text-dim': '#3a3a48',
+      '--accent': '#c8aa50', '--accent-light': '#ebcd6e', '--accent-dark': '#8c783c',
+      '--accent-glow': 'rgba(200, 170, 80, 0.15)',
+      '--success': '#60d678', '--warning': '#ebcd6e', '--danger': '#d63636',
+      '--shadow-glow': '0 0 20px rgba(200, 170, 80, 0.2)', '--card-hover-border': 'rgba(200, 170, 80, 0.3)',
+    },
+  },
+  {
     id: '', name: 'True Dark', color: '#ffffff', desc: 'Pure black & white',
     vars: {
       '--bg-primary': '#000000', '--bg-surface': '#000000', '--bg-surface-alt': '#000000',
@@ -185,10 +198,10 @@ const themes = [
 
 const themeMap = Object.fromEntries(themes.map((t) => [t.id, t]));
 
-const defaultVars = themeMap[''].vars;
+const defaultVars = themeMap['sublevel4'].vars;
 
 function applyTheme(themeId) {
-  const theme = themeMap[themeId] || themeMap[''];
+  const theme = themeMap[themeId] || themeMap['sublevel4'];
   const root = document.documentElement;
   const vars = theme.vars;
   Object.keys(vars).forEach((key) => root.style.setProperty(key, vars[key]));

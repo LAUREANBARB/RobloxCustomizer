@@ -38,7 +38,7 @@ const CONFIG_PATH = path.join(APP_DATA, 'config.json');
 const DEFAULT_CONFIG = {
   activeCursorPreset: null, activeShiftlockPreset: null, activeSoundPreset: null, activeFontPreset: null,
   activeSkyboxPreset: null, activeMaterialPreset: null, activeProfile: null,
-  watcherEnabled: false, theme: '',
+  watcherEnabled: false, theme: 'sublevel4',
   startMinimized: false, previewVolume: 50, watcherInterval: 2,
   forceSize: 0, forceShiftlockSize: 0,
   animationsEnabled: true,
