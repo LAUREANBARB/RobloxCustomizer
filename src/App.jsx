@@ -55,8 +55,8 @@ export default function App() {
       setSkyboxPresets(skyboxPresets);
       setMaterialPresets(materialPresets);
       setConfig(config);
-      setTheme(config.theme || '');
-      applyTheme(config.theme || '');
+      setTheme(config.theme || 'sublevel4');
+      applyTheme(config.theme || 'sublevel4');
       setRobloxVersion(version);
 
       const running = await window.api.isRobloxRunning();

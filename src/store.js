@@ -13,7 +13,7 @@ const useStore = create((set) => ({
     activeMaterialPreset: null,
     activeProfile: null,
     watcherEnabled: false,
-    theme: '',
+    theme: 'sublevel4',
     startMinimized: false,
     previewVolume: 50,
     watcherInterval: 2,
