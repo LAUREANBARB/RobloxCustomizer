@@ -3,6 +3,30 @@ import useStore from '../store';
 import usePresetGrid from '../hooks/usePresetGrid';
 import { Check, Export, XMark, Spinner, Folder, Import, PlayIcon, StarIcon } from './icons';
 
+function SoberWarning({ label, reason }) {
+  return (
+    <div className="fade-in">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-semibold text-surface-100">{label}</h1>
+          <p className="text-sm text-surface-500 mt-0.5">{label} presets.</p>
+        </div>
+      </div>
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center mb-5">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-amber-400">
+            <path d="M16 4L28 28H4L16 4Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+            <line x1="16" y1="13" x2="16" y2="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="16" cy="24" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium text-surface-300 mb-2">Not available on Sober</h3>
+        <p className="text-sm text-surface-500 max-w-md leading-relaxed">{reason}</p>
+      </div>
+    </div>
+  );
+}
+
 function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDelete, isOwner, volume }) {
   const { previewCache, setPreview, playingSound, setPlayingSound, config, setConfig } = useStore();
   const [loading, setLoading] = useState(false);
@@ -138,11 +162,26 @@ function SoundPresetCard({ preset, isActive, onApply, onRemove, onExport, onDele
 }
 
 export default function SoundGrid() {
+  const [isSober, setIsSober] = useState(false);
+
+  useEffect(() => {
+    window.api.isSober().then(setIsSober);
+  }, []);
+
   const {
     presets, config, search, setSearch, filteredPresets,
     handleApply, handleRemove, handleExport, handleImport, handleDelete,
     handleOpenFolder, isActive,
   } = usePresetGrid('sounds');
+
+  if (isSober) {
+    return (
+      <SoberWarning
+        label="Sounds"
+        reason="Sound files are not included in Sober's Roblox APK as standalone assets. The sound replacement overlay cannot override them."
+      />
+    );
+  }
 
   return (
     <div className="fade-in">

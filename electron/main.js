@@ -6,7 +6,7 @@ if (process.platform === 'linux') {
 }
 
 const { loadConfig, saveConfig, ensureDirs, IS_LINUX, DIRS } = require('./services/config');
-const { getLatestRobloxVersion, getOldRobloxVersions, isRobloxRunning, killRobloxProcess, launchRoblox, cleanOldVersions } = require('./services/roblox');
+const { getLatestRobloxVersion, getOldRobloxVersions, isRobloxRunning, killRobloxProcess, launchRoblox, cleanOldVersions, isSoberRoblox } = require('./services/roblox');
 const { getAllPresets, setActivePreset, removeActivePreset, deletePreset, getPreviewData, reapplyAllMods, getCategorizedPresets, listProfiles, saveProfile, applyProfile, deleteProfile, activeKey } = require('./services/presets');
 const { startWatcher, restartWatcherIfConfigChanged } = require('./services/watcher');
 const { createTray, rebuildMenu } = require('./services/tray');
@@ -88,6 +88,7 @@ ipcMain.handle('get-roblox-version', () => getLatestRobloxVersion());
 ipcMain.handle('get-old-roblox-versions', () => getOldRobloxVersions());
 ipcMain.handle('clean-old-versions', () => cleanOldVersions());
 ipcMain.handle('is-roblox-running', () => isRobloxRunning());
+ipcMain.handle('is-sober', () => isSoberRoblox());
 ipcMain.handle('kill-roblox', () => { killRobloxProcess(); return { success: true }; });
 ipcMain.handle('restart-roblox', () => {
   killRobloxProcess();

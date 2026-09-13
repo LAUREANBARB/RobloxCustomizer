@@ -45,6 +45,7 @@ contextBridge.exposeInMainWorld('api', {
   getWelcomeDismissed: () => ipcRenderer.invoke('get-welcome-dismissed'),
   setWelcomeDismissed: (v) => ipcRenderer.invoke('set-welcome-dismissed', v),
   isRobloxRunning: () => ipcRenderer.invoke('is-roblox-running'),
+  isSober: () => ipcRenderer.invoke('is-sober'),
   killRoblox: () => ipcRenderer.invoke('kill-roblox'),
   restartRoblox: () => ipcRenderer.invoke('restart-roblox'),
 
