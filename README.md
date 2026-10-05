@@ -1,21 +1,16 @@
 # Roblox Customizer
 
-> A desktop utility for managing and applying local Roblox cosmetic customizations.
+A desktop utility for managing and applying local Roblox cosmetic customizations.
 
 > [!CAUTION]
-> **Use at your own risk.**
+> Roblox Customizer only applies local cosmetic changes (cursors, fonts,
+> sounds, textures, skyboxes, materials). It does not inject code, modify the
+> Roblox executable, read or write process memory, or automate gameplay.
 >
-> Roblox Customizer only applies local cosmetic modifications such as cursors,
-> fonts, sounds, textures, skyboxes, and materials. It does not inject code,
-> modify the Roblox executable, manipulate memory, automate gameplay, or provide
-> gameplay advantages.
+> Modifying Roblox's local files may still go against Roblox's Terms of Use,
+> and I can't guarantee it won't be flagged. Use at your own risk.
 >
-> Roblox may detect modified client files or third-party software and take
-> action on an account. I cannot guarantee that using this tool will never
-> result in account restrictions.
->
-> By using this tool, you acknowledge that you are responsible for your own
-> use of it and any consequences that may result from doing so.
+> This project is not affiliated with or endorsed by Roblox Corporation.
 
 ## Features
 
@@ -28,40 +23,25 @@
 
 ## Compatibility
 
-### Windows
-
-Supports the native Roblox client.
-
-Third-party bootstrapper clients such as Bloxstrap and Fishstrap are
-currently not supported.
-
-### Linux
-
-Currently supports Sober via Flatpak.
+| Platform | Support |
+|----------|---------|
+| Windows | Native Roblox client. Bloxstrap and Fishstrap are not supported yet. |
+| Linux | Sober (Flatpak) |
 
 ## Asset Library
 
-Additional cursors, fonts, and other assets can be added manually to
-`custom-assets/`.
-
-More asset types are currently being added.
+Add your own cursors, fonts, and other assets to `custom-assets/`.
+More asset types are coming.
 
 ## Tech Stack
 
-- Electron
-- React
-- Vite
-- Tailwind CSS
-- Zustand
+Electron, React, Vite, Tailwind CSS, Zustand
 
 ## Building from Source
 
-### Requirements
-
-- Node.js
-
-### Run
+Requires Node.js.
 
 ```bash
 npm install
 npm start
+```
