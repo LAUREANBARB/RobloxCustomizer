@@ -5,7 +5,7 @@ const https = require('https');
 const { spawn } = require('child_process');
 const AdmZip = require('adm-zip');
 const { app } = require('electron');
-const { downloadToFile, sha256File, compareVersions } = require('./update-download');
+const { downloadToFile, sha256File, compareVersions, restoreUnixModes } = require('./update-download');
 
 const OWNER = 'LAUREANBARB';
 const REPO = 'RobloxCustomizer';
@@ -101,7 +101,9 @@ async function downloadAndInstall(onStatus) {
     if ((await sha256File(zipPath)) !== update.sha256) throw new Error('Update checksum mismatch');
 
     onStatus('Installing...');
-    new AdmZip(zipPath).extractAllTo(tmpDir, true);
+    const zip = new AdmZip(zipPath);
+    zip.extractAllTo(tmpDir, true);
+    restoreUnixModes(zip, tmpDir);
     const extracted = fs
       .readdirSync(tmpDir)
       .find((d) => /^RobloxCustomizer-[A-Za-z0-9._-]+$/.test(d) && fs.lstatSync(path.join(tmpDir, d)).isDirectory());
