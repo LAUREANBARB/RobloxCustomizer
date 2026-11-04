@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const { DIRS, CURSOR_SUBPATH, SHIFTLOCK_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH, APP_DATA, loadConfig, saveConfig, IS_LINUX, cap } = require('./config');
 const { getRobloxBase, getRobloxOverlayDir, getLatestRobloxVersion } = require('./roblox');
+const { isSafeName, resolveInside } = require('./safe-path');
 
 const KNOWN_ROBLOX_FONTS = [
   'AccanthisADFStd-Regular.otf',
@@ -108,19 +109,25 @@ function activeKey(type) {
 function scanTypeDirs(type) {
   if (!DIRS[type]) return [];
   if (!fs.existsSync(DIRS[type])) return [];
-  return fs.readdirSync(DIRS[type]).filter((d) => fs.statSync(path.join(DIRS[type], d)).isDirectory());
+  return fs.readdirSync(DIRS[type]).filter((d) => fs.lstatSync(path.join(DIRS[type], d)).isDirectory());
 }
 
 function getPresetFiles(type, presetName) {
-  const dir = path.join(DIRS[type], presetName);
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir).filter((f) => fs.statSync(path.join(dir, f)).isFile());
+  const dir = resolvePresetDir(type, presetName);
+  if (!dir) return [];
+  return fs.readdirSync(dir.dir).filter((f) => fs.lstatSync(path.join(dir.dir, f)).isFile());
 }
 
 function resolvePresetDir(type, name) {
-  const dir = path.join(DIRS[type], name);
-  if (fs.existsSync(dir)) return { dir, source: 'custom' };
-  return null;
+  if (!DIRS[type] || !isSafeName(name)) return null;
+  const dir = resolveInside(DIRS[type], name);
+  if (!dir) return null;
+  try {
+    if (!fs.lstatSync(dir).isDirectory()) return null;
+  } catch {
+    return null;
+  }
+  return { dir, source: 'custom' };
 }
 
 function getOverlayOrRobloxDir(type, versionDir) {
@@ -196,8 +203,8 @@ async function applyPreset(type, presetName, versionDir, presetDir) {
   const cfg = PRESET_TYPES[type];
   const config = loadConfig();
   const size = (type === 'cursors' || type === 'shiftlock') ? (type === 'shiftlock' && config.forceShiftlockSize > 0 ? config.forceShiftlockSize : config.forceSize || 0) : 0;
-  const src = presetDir || path.join(DIRS[type], presetName);
-  if (!fs.existsSync(src)) return false;
+  const src = presetDir || resolvePresetDir(type, presetName)?.dir;
+  if (!src || !fs.existsSync(src)) return false;
   const destDir = getOverlayOrRobloxDir(type, versionDir);
   if (!destDir) return false;
   const files = fs.readdirSync(src).filter((f) => cfg.extensions.some((ext) => f.toLowerCase().endsWith(ext)));
@@ -236,8 +243,8 @@ function removeAppliedFiles(type, presetName) {
   const destDir = getOverlayOrRobloxDir(type, version);
   if (!destDir) return;
   const cfg = PRESET_TYPES[type];
-  const src = path.join(DIRS[type], presetName);
-  if (!fs.existsSync(src)) return;
+  const src = resolvePresetDir(type, presetName)?.dir;
+  if (!src) return;
   const files = fs.readdirSync(src).filter((f) => cfg.extensions.some((ext) => f.toLowerCase().endsWith(ext)));
 
   if (type === 'shiftlock' && files.length > 0) {
@@ -350,6 +357,9 @@ async function removeActivePreset(type) {
 }
 
 async function deletePreset(type, presetName) {
+  if (!DIRS[type] || !isSafeName(presetName)) return { success: false, reason: 'Invalid preset name' };
+  const dir = resolveInside(DIRS[type], presetName);
+  if (!dir) return { success: false, reason: 'Invalid preset name' };
   const config = loadConfig();
   const key = activeKey(type);
   if (config[key] === presetName) {
@@ -357,7 +367,6 @@ async function deletePreset(type, presetName) {
     config[key] = null;
     saveConfig(config);
   }
-  const dir = path.join(DIRS[type], presetName);
   if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
   return { success: true };
 }
@@ -365,23 +374,24 @@ async function deletePreset(type, presetName) {
 function getPreviewData(type, presetName, fileName) {
   const MAX_SIZE = 5 * 1024 * 1024;
   const base = DIRS[type];
-  const filePath = path.join(base, presetName, fileName);
-  const resolved = path.resolve(filePath);
-  if (!resolved.startsWith(path.resolve(base) + path.sep)) return null;
-  if (!fs.existsSync(resolved)) return null;
-  const stat = fs.statSync(resolved);
-  if (stat.size > MAX_SIZE) return null;
+  if (!base || !isSafeName(presetName) || !isSafeName(fileName)) return null;
+  const filePath = resolveInside(base, presetName, fileName);
+  if (!filePath || !fs.existsSync(filePath)) return null;
+  const real = fs.realpathSync(filePath);
+  if (!real.startsWith(fs.realpathSync(base) + path.sep)) return null;
+  const stat = fs.statSync(real);
+  if (!stat.isFile() || stat.size > MAX_SIZE) return null;
   const ext = path.extname(fileName).toLowerCase();
   if (ext === '.png') {
-    return 'data:image/png;base64,' + fs.readFileSync(resolved).toString('base64');
+    return 'data:image/png;base64,' + fs.readFileSync(real).toString('base64');
   }
   if (['.ogg', '.mp3', '.wav'].includes(ext)) {
     const mime = ext === '.ogg' ? 'audio/ogg' : 'audio/' + ext.slice(1);
-    return 'data:' + mime + ';base64,' + fs.readFileSync(resolved).toString('base64');
+    return 'data:' + mime + ';base64,' + fs.readFileSync(real).toString('base64');
   }
   if (['.ttf', '.otf'].includes(ext)) {
     const mime = ext === '.ttf' ? 'font/ttf' : 'font/otf';
-    return 'data:' + mime + ';base64,' + fs.readFileSync(resolved).toString('base64');
+    return 'data:' + mime + ';base64,' + fs.readFileSync(real).toString('base64');
   }
   return null;
 }
@@ -423,8 +433,13 @@ function listProfiles() {
 }
 
 function saveProfile(profile) {
+  if (!profile || typeof profile !== 'object' || !isSafeName(profile.name)) {
+    return { success: false, reason: 'Invalid profile name' };
+  }
+  const filePath = resolveInside(DIRS.profiles, profile.name + '.json');
+  if (!filePath) return { success: false, reason: 'Invalid profile name' };
   if (!fs.existsSync(DIRS.profiles)) fs.mkdirSync(DIRS.profiles, { recursive: true });
-  fs.writeFileSync(path.join(DIRS.profiles, profile.name + '.json'), JSON.stringify(profile, null, 2));
+  fs.writeFileSync(filePath, JSON.stringify(profile, null, 2));
   return { success: true };
 }
 
@@ -437,18 +452,21 @@ const PROFILE_KEYS = {
 };
 
 async function applyProfile(profile) {
+  if (!profile || typeof profile !== 'object') return { success: false, reason: 'Invalid profile' };
   const config = loadConfig();
   Object.entries(PROFILE_KEYS).forEach(([shortKey, ak]) => {
-    config[ak] = profile[shortKey] || null;
+    config[ak] = isSafeName(profile[shortKey]) ? profile[shortKey] : null;
   });
-  config.activeProfile = profile.name || null;
+  config.activeProfile = isSafeName(profile.name) ? profile.name : null;
   saveConfig(config);
   await reapplyAllMods();
   return { success: true };
 }
 
 function deleteProfile(name) {
-  const filePath = path.join(DIRS.profiles, name + '.json');
+  if (!isSafeName(name)) return { success: false, reason: 'Invalid profile name' };
+  const filePath = resolveInside(DIRS.profiles, name + '.json');
+  if (!filePath) return { success: false, reason: 'Invalid profile name' };
   if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   return { success: true };
 }
