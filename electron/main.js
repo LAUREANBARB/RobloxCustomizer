@@ -220,9 +220,9 @@ ipcMain.handle('is-favorite', (_e, { type, name }) => {
   return !!(config.favorites && config.favorites[type] && config.favorites[type].includes(name));
 });
 
-ipcMain.handle('download-and-install', async (_e, updateInfo) => {
+ipcMain.handle('download-and-install', async () => {
   try {
-    await downloadAndInstall(updateInfo, mainWindow, (status) => {
+    await downloadAndInstall((status) => {
       send('update-status', { status });
     });
   } catch (err) {

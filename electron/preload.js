@@ -76,7 +76,7 @@ contextBridge.exposeInMainWorld('api', {
   getFavorites: () => ipcRenderer.invoke('get-favorites'),
   isFavorite: (type, name) => ipcRenderer.invoke('is-favorite', { type, name }),
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
-  downloadAndInstall: (info) => ipcRenderer.invoke('download-and-install', info),
+  downloadAndInstall: () => ipcRenderer.invoke('download-and-install'),
 
   onModsReapplied: (cb) => {
     const handler = (_e, data) => cb(data);
