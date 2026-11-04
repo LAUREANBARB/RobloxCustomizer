@@ -19,6 +19,13 @@ module.exports = [
     },
   },
   {
+    files: ['electron/**/*.test.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+    },
+  },
+  {
     files: ['src/**/*.js', 'src/**/*.jsx'],
     languageOptions: {
       ecmaVersion: 'latest',
