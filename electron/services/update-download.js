@@ -1,6 +1,7 @@
 const fs = require('fs');
 const https = require('https');
 const crypto = require('crypto');
+const { resolveInside } = require('./safe-path');
 
 const TRUSTED_HOSTS = ['github.com', 'objects.githubusercontent.com', 'api.github.com'];
 const MAX_REDIRECTS = 3;
@@ -78,4 +79,15 @@ function compareVersions(a, b) {
   return 0;
 }
 
-module.exports = { assertTrustedUrl, downloadToFile, sha256File, compareVersions };
+function restoreUnixModes(zip, destDir) {
+  if (process.platform === 'win32') return;
+  for (const entry of zip.getEntries()) {
+    const mode = (entry.attr >>> 16) & 0o777;
+    if (!mode) continue;
+    const target = resolveInside(destDir, ...entry.entryName.split('/'));
+    if (!target || !fs.existsSync(target)) continue;
+    fs.chmodSync(target, mode);
+  }
+}
+
+module.exports = { assertTrustedUrl, downloadToFile, sha256File, compareVersions, restoreUnixModes };

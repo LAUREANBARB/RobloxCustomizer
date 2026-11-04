@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { assertTrustedUrl, sha256File, compareVersions } from './update-download';
+import AdmZip from 'adm-zip';
+import { assertTrustedUrl, sha256File, compareVersions, restoreUnixModes } from './update-download';
 
 describe('assertTrustedUrl', () => {
   it('accepts GitHub hosts over https', () => {
@@ -47,5 +48,27 @@ describe('sha256File', () => {
     } finally {
       fs.rmSync(file, { force: true });
     }
+  });
+});
+
+describe('restoreUnixModes', () => {
+  it('restores executable bits lost during adm-zip extraction', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rc-modes-'));
+    const archive = path.join(dir, 'update.zip');
+    const zip = new AdmZip();
+    zip.addFile('RobloxCustomizer-linux-x64/RobloxCustomizer', Buffer.from('bin'), '', 0o755);
+    zip.addFile('RobloxCustomizer-linux-x64/version', Buffer.from('1'), '', 0o644);
+    zip.writeZip(archive);
+
+    const extracted = fs.mkdtempSync(path.join(os.tmpdir(), 'rc-modes-out-'));
+    const source = new AdmZip(archive);
+    source.extractAllTo(extracted, true);
+    restoreUnixModes(source, extracted);
+
+    expect(fs.statSync(path.join(extracted, 'RobloxCustomizer-linux-x64/RobloxCustomizer')).mode & 0o777).toBe(0o755);
+    expect(fs.statSync(path.join(extracted, 'RobloxCustomizer-linux-x64/version')).mode & 0o777).toBe(0o644);
+
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(extracted, { recursive: true, force: true });
   });
 });
