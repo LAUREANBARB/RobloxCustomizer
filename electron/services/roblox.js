@@ -144,7 +144,7 @@ function launchRoblox() {
     if (!fs.existsSync(exePath)) return false;
     execFile(exePath);
   } else if (IS_LINUX) {
-    execFile('flatpak', isSoberRoblox() ? ['run', 'com.soberhaseg.Roblox'] : ['run', 'com.roblox.client']);
+    execFile('flatpak', isSoberRoblox() ? ['run', 'org.vinegarhq.Sober'] : ['run', 'com.roblox.client']);
   } else if (IS_MAC) {
     execFile('wine', [path.join(getRobloxBase(), version, 'RobloxPlayerBeta.exe')]);
   }

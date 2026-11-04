@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const { isSafeName } = require('./safe-path');
 
 const IS_WINDOWS = process.platform === 'win32';
 const IS_LINUX = process.platform === 'linux';
@@ -35,6 +36,8 @@ const MATERIAL_SUBPATH = path.join('PlatformContent', 'pc', 'textures');
 
 const CONFIG_PATH = path.join(APP_DATA, 'config.json');
 
+const PRESET_TYPES = ['cursors', 'shiftlock', 'sounds', 'fonts', 'skyboxes', 'materials'];
+
 const DEFAULT_CONFIG = {
   activeCursorPreset: null, activeShiftlockPreset: null, activeSoundPreset: null, activeFontPreset: null,
   activeSkyboxPreset: null, activeMaterialPreset: null, activeProfile: null,
@@ -44,6 +47,39 @@ const DEFAULT_CONFIG = {
   animationsEnabled: true,
   favorites: {},
 };
+
+function sanitizeConfig(data) {
+  const out = { ...DEFAULT_CONFIG };
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return out;
+
+  for (const [key, fallback] of Object.entries(DEFAULT_CONFIG)) {
+    const value = data[key];
+    if (value === undefined) continue;
+    if (fallback === null) {
+      out[key] = isSafeName(value) ? value : null;
+    } else if (typeof fallback === 'boolean') {
+      if (typeof value === 'boolean') out[key] = value;
+    } else if (typeof fallback === 'number') {
+      if (Number.isFinite(value) && value >= 0) out[key] = value;
+    } else if (typeof fallback === 'string') {
+      if (typeof value === 'string' && value.length <= 64) out[key] = value;
+    }
+  }
+
+  out.favorites = sanitizeFavorites(data.favorites);
+  return out;
+}
+
+function sanitizeFavorites(value) {
+  const out = {};
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return out;
+  for (const type of PRESET_TYPES) {
+    if (!Array.isArray(value[type])) continue;
+    const names = value[type].filter(isSafeName);
+    if (names.length > 0) out[type] = names;
+  }
+  return out;
+}
 
 function cap(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -83,8 +119,8 @@ function saveConfig(config) {
 }
 
 module.exports = {
-  APP_DATA, DIRS, CONFIG_PATH, DEFAULT_CONFIG,
+  APP_DATA, DIRS, CONFIG_PATH, DEFAULT_CONFIG, PRESET_TYPES,
   CURSOR_SUBPATH, SHIFTLOCK_SUBPATH, SOUND_SUBPATH, FONT_SUBPATH, SKYBOX_SUBPATH, MATERIAL_SUBPATH,
   IS_WINDOWS, IS_LINUX, IS_MAC,
-  ensureDirs, loadConfig, saveConfig, cap,
+  ensureDirs, loadConfig, saveConfig, sanitizeConfig, cap,
 };

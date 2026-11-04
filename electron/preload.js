@@ -45,6 +45,7 @@ contextBridge.exposeInMainWorld('api', {
   getWelcomeDismissed: () => ipcRenderer.invoke('get-welcome-dismissed'),
   setWelcomeDismissed: (v) => ipcRenderer.invoke('set-welcome-dismissed', v),
   isRobloxRunning: () => ipcRenderer.invoke('is-roblox-running'),
+  isSober: () => ipcRenderer.invoke('is-sober'),
   killRoblox: () => ipcRenderer.invoke('kill-roblox'),
   restartRoblox: () => ipcRenderer.invoke('restart-roblox'),
 
@@ -69,13 +70,12 @@ contextBridge.exposeInMainWorld('api', {
   setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
   getAutostart: () => ipcRenderer.invoke('get-autostart'),
   setAutostart: (enabled) => ipcRenderer.invoke('set-autostart', enabled),
-  openExternal: (url) => ipcRenderer.invoke('open-external', url),
   openRobloxFolder: () => ipcRenderer.invoke('open-roblox-folder'),
   toggleFavorite: (type, name) => ipcRenderer.invoke('toggle-favorite', { type, name }),
   getFavorites: () => ipcRenderer.invoke('get-favorites'),
   isFavorite: (type, name) => ipcRenderer.invoke('is-favorite', { type, name }),
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
-  downloadAndInstall: (info) => ipcRenderer.invoke('download-and-install', info),
+  downloadAndInstall: () => ipcRenderer.invoke('download-and-install'),
 
   onModsReapplied: (cb) => {
     const handler = (_e, data) => cb(data);

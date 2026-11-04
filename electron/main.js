@@ -1,12 +1,13 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
+const { pathToFileURL } = require('url');
 
 if (process.platform === 'linux') {
   app.disableHardwareAcceleration();
 }
 
 const { loadConfig, saveConfig, ensureDirs, IS_LINUX, DIRS } = require('./services/config');
-const { getLatestRobloxVersion, getOldRobloxVersions, isRobloxRunning, killRobloxProcess, launchRoblox, cleanOldVersions } = require('./services/roblox');
+const { getLatestRobloxVersion, getOldRobloxVersions, isRobloxRunning, killRobloxProcess, launchRoblox, cleanOldVersions, isSoberRoblox } = require('./services/roblox');
 const { getAllPresets, setActivePreset, removeActivePreset, deletePreset, getPreviewData, reapplyAllMods, getCategorizedPresets, listProfiles, saveProfile, applyProfile, deleteProfile, activeKey } = require('./services/presets');
 const { startWatcher, restartWatcherIfConfigChanged } = require('./services/watcher');
 const { createTray, rebuildMenu } = require('./services/tray');
@@ -37,11 +38,33 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+  const devServerUrl = process.env.VITE_DEV_SERVER_URL;
+  const appUrl = devServerUrl || pathToFileURL(path.join(__dirname, '..', 'dist', 'index.html')).href;
+  const isAllowedNavigation = (target) => {
+    try {
+      const url = new URL(target);
+      if (devServerUrl) return url.origin === new URL(devServerUrl).origin;
+      return url.href === appUrl;
+    } catch {
+      return false;
+    }
+  };
+
+  mainWindow.webContents.on('will-navigate', (e, target) => {
+    if (!isAllowedNavigation(target)) e.preventDefault();
+  });
+  mainWindow.webContents.on('will-redirect', (e, target) => {
+    if (!isAllowedNavigation(target)) e.preventDefault();
+  });
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWindow.webContents.on('will-attach-webview', (e) => e.preventDefault());
+
+  if (devServerUrl) {
+    mainWindow.loadURL(devServerUrl);
   } else {
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
   }
@@ -88,6 +111,7 @@ ipcMain.handle('get-roblox-version', () => getLatestRobloxVersion());
 ipcMain.handle('get-old-roblox-versions', () => getOldRobloxVersions());
 ipcMain.handle('clean-old-versions', () => cleanOldVersions());
 ipcMain.handle('is-roblox-running', () => isRobloxRunning());
+ipcMain.handle('is-sober', () => isSoberRoblox());
 ipcMain.handle('kill-roblox', () => { killRobloxProcess(); return { success: true }; });
 ipcMain.handle('restart-roblox', () => {
   killRobloxProcess();
@@ -189,8 +213,6 @@ ipcMain.handle('check-for-updates', async () => {
   return await checkForUpdates(app.getVersion());
 });
 
-ipcMain.handle('open-external', (_e, url) => { shell.openExternal(url); });
-
 ipcMain.handle('open-roblox-folder', () => {
   const { getRobloxBase } = require('./services/roblox');
   const base = getRobloxBase();
@@ -219,9 +241,9 @@ ipcMain.handle('is-favorite', (_e, { type, name }) => {
   return !!(config.favorites && config.favorites[type] && config.favorites[type].includes(name));
 });
 
-ipcMain.handle('download-and-install', async (_e, updateInfo) => {
+ipcMain.handle('download-and-install', async () => {
   try {
-    await downloadAndInstall(updateInfo, mainWindow, (status) => {
+    await downloadAndInstall((status) => {
       send('update-status', { status });
     });
   } catch (err) {

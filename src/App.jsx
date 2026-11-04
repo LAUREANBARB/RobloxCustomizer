@@ -82,7 +82,7 @@ export default function App() {
     const onUpdateAvailable = (_e, data) => {
       if (mounted) {
         addNotification(`Update v${data.version} available. Click to install.`, 'info', () => {
-          window.api.downloadAndInstall(data);
+          window.api.downloadAndInstall();
         });
       }
     };

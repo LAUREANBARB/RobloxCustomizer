@@ -1,15 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import usePresetGrid from '../hooks/usePresetGrid';
 import { Folder, Import } from './icons';
 import CursorPreviewCard from './CursorPreviewCard';
 import ForceSizeControl from './ForceSizeControl';
 
 export default function ShiftlockGrid() {
+  const [isSober, setIsSober] = useState(false);
+
+  useEffect(() => {
+    window.api.isSober().then(setIsSober);
+  }, []);
+
   const {
     presets, config, search, setSearch, filteredPresets,
     handleApply, handleRemove, handleExport, handleImport, handleDelete,
     handleOpenFolder, isActive,
   } = usePresetGrid('shiftlock');
+
+  if (isSober) {
+    return (
+      <div className="fade-in">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-xl font-semibold text-surface-100">Shiftlock</h1>
+            <p className="text-sm text-surface-500 mt-0.5">Shiftlock cursor presets.</p>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center mb-5">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-amber-400">
+              <path d="M16 4L28 28H4L16 4Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+              <line x1="16" y1="13" x2="16" y2="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <circle cx="16" cy="24" r="1" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-surface-300 mb-2">Not available on Sober</h3>
+          <p className="text-sm text-surface-500 max-w-md leading-relaxed">
+            The shiftlock cursor (<code className="text-surface-400 bg-surface-800 px-1.5 py-0.5 rounded text-xs">MouseLockedCursor.png</code>) is embedded in Sober's engine binary
+            and cannot be overridden through the asset overlay. Regular cursor replacement still works.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fade-in">

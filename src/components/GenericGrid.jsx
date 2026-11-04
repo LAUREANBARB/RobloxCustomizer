@@ -2,6 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import useStore from '../store';
 import { Check, Export, XMark, Spinner, Folder, StarIcon } from './icons';
 
+const SOBER_WARNINGS = {
+  skyboxes: "Skybox textures (.tex) are stored under a different path in Sober's APK (android/textures/sky/) that doesn't match the overlay path. Skybox replacement is not supported on Sober.",
+  materials: "Material textures are not available as standalone assets in Sober's Roblox APK. Material replacement is not supported on Sober.",
+};
+
 const CONFIG = {
   skyboxes: {
     type: 'skyboxes',
@@ -120,6 +125,35 @@ export default function GenericGrid({ presetType }) {
   const { config, setConfig, addNotification } = store;
   const [loading, setLoading] = useState(null);
   const [search, setSearch] = useState('');
+  const [isSober, setIsSober] = useState(false);
+
+  useEffect(() => {
+    window.api.isSober().then(setIsSober);
+  }, []);
+
+  if (isSober && SOBER_WARNINGS[presetType]) {
+    return (
+      <div className="fade-in">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>{cfg.label}</h1>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{cfg.desc}</p>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center mb-5">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-amber-400">
+              <path d="M16 4L28 28H4L16 4Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+              <line x1="16" y1="13" x2="16" y2="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <circle cx="16" cy="24" r="1" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-surface-300 mb-2">Not available on Sober</h3>
+          <p className="text-sm text-surface-500 max-w-md leading-relaxed">{SOBER_WARNINGS[presetType]}</p>
+        </div>
+      </div>
+    );
+  }
 
   const filteredPresets = (presets ?? []).filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
