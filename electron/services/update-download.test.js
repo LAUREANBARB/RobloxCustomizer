@@ -11,6 +11,7 @@ describe('assertTrustedUrl', () => {
       'https://api.github.com/repos/a/b/releases/latest',
       'https://github.com/a/b/releases/download/v1/x.zip',
       'https://objects.githubusercontent.com/some/path',
+      'https://release-assets.githubusercontent.com/github-production-release-asset/1/2',
     ]) {
       expect(assertTrustedUrl(url).hostname).toBe(new URL(url).hostname);
     }

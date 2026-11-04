@@ -3,7 +3,7 @@ const https = require('https');
 const crypto = require('crypto');
 const { resolveInside } = require('./safe-path');
 
-const TRUSTED_HOSTS = ['github.com', 'objects.githubusercontent.com', 'api.github.com'];
+const TRUSTED_HOSTS = ['github.com', 'objects.githubusercontent.com', 'release-assets.githubusercontent.com', 'api.github.com'];
 const MAX_REDIRECTS = 3;
 
 function assertTrustedUrl(value) {
